@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>机器学习|感知机和人工神经网络详解 - Laugh&#039;s blog</title><link rel="manifest" href="/blog/manifest.json"><meta name="application-name" content="Laugh&#039;s blog"><meta name="msapplication-TileImage" content="/img/favicon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Laugh&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta description="人工神经网络是一种发展时间较早且十分常用的机器学习算法。因其模仿人类神经元工作的特点，在监督学习和非监督学习领域都给予了人工神经网络较高的期望。目前，由传统人工神经网络发展而来的卷积神经网络、循环神经网络已经成为了深度学习的基石。本篇文章中，我们将从人工神经网络的原型感知机出发，介绍机器学习中人工神经网络的特点及应用。"><meta property="og:type" content="blog"><meta property="og:title" content="机器学习|感知机和人工神经网络详解"><meta property="og:url" content="http://www.laugh12321.cn/blog/2019/01/31/neural_network/"><meta property="og:site_name" content="Laugh&#039;s blog"><meta property="og:description" content="人工神经网络是一种发展时间较早且十分常用的机器学习算法。因其模仿人类神经元工作的特点，在监督学习和非监督学习领域都给予了人工神经网络较高的期望。目前，由传统人工神经网络发展而来的卷积神经网络、循环神经网络已经成为了深度学习的基石。本篇文章中，我们将从人工神经网络的原型感知机出发，介绍机器学习中人工神经网络的特点及应用。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/07.jpg"><meta property="article:published_time" content="2019-01-31T00:00:00.000Z"><meta property="article:modified_time" content="2020-10-21T08:57:06.985Z"><meta property="article:author" content="Laugh"><meta property="article:tag" content="Machine Learning"><meta property="article:tag" content="Neural Network"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/07.jpg"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://www.laugh12321.cn/blog/2019/01/31/neural_network/"},"headline":"Laugh's blog","image":["https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/photo/07.jpg"],"datePublished":"2019-01-31T00:00:00.000Z","dateModified":"2020-10-21T08:57:06.985Z","author":{"@type":"Person","name":"Laugh"},"description":"人工神经网络是一种发展时间较早且十分常用的机器学习算法。因其模仿人类神经元工作的特点，在监督学习和非监督学习领域都给予了人工神经网络较高的期望。目前，由传统人工神经网络发展而来的卷积神经网络、循环神经网络已经成为了深度学习的基石。本篇文章中，我们将从人工神经网络的原型感知机出发，介绍机器学习中人工神经网络的特点及应用。"}</script><link rel="canonical" href="http://www.laugh12321.cn/blog/2019/01/31/neural_network/"><link rel="icon" href="/blog/img/favicon.svg"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.12.0/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/blog/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 5.2.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/blog/">Laugh</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/blog/">首页</a><a class="navbar-item" href="/blog/archives">归档</a><a class="navbar-item" href="/blog/categories">分类</a><a class="navbar-item" href="/blog/tags">标签</a><a class="navbar-item" href="/blog/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="GitHub" href="https://github.com/laugh12321"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/07.jpg" alt="机器学习|感知机和人工神经网络详解"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2019-01-31T00:00:00.000Z" title="2019-01-31T00:00:00.000Z">2019-01-31</time>发表</span><span class="level-item"><time dateTime="2020-10-21T08:57:06.985Z" title="2020-10-21T08:57:06.985Z">2020-10-21</time>更新</span><span class="level-item"><a class="link-muted" href="/blog/categories/Machine-Learning/">Machine Learning</a><span> / </span><a class="link-muted" href="/blog/categories/Machine-Learning/Neural-Network/">Neural Network</a></span><span class="level-item">1 小时读完 (大约7563个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">机器学习|感知机和人工神经网络详解</h1><div class="content"><p>人工神经网络是一种发展时间较早且十分常用的机器学习算法。因其模仿人类神经元工作的特点，在监督学习和非监督学习领域都给予了人工神经网络较高的期望。目前，由传统人工神经网络发展而来的卷积神经网络、循环神经网络已经成为了深度学习的基石。本篇文章中，我们将从人工神经网络的原型感知机出发，介绍机器学习中人工神经网络的特点及应用。  </p>
+<a id="more"></a>
+
+<h2 id="感知机"><a href="#感知机" class="headerlink" title="感知机"></a>感知机</h2><p>在介绍人工神经网络之前，我们先介绍它的原型：感知机。关于感知机，我们先引用一段来自维基百科的背景介绍：</p>
+<blockquote>
+<p>感知器（英语：Perceptron）是 Frank Rosenblatt 在 1957 年就职于 Cornell 航空实验室时所发明的一种人工神经网络。它可以被视为一种最简单形式的前馈神经网络，是一种二元线性分类器。</p>
+</blockquote>
+<p>如果你之前从未接触过人工神经网络，那么上面这句话或许还需要等到阅读完这篇文章才能完整理解。不过，你可以初步发现，感知机其实就是人工神经网络，只不过是其初级形态。</p>
+<h3 id="感知机的推导过程"><a href="#感知机的推导过程" class="headerlink" title="感知机的推导过程"></a>感知机的推导过程</h3><p>那么，<strong>感知机到底是什么？它是怎样被发明出来的呢？</strong></p>
+<p>要搞清楚上面的问题，我们就需要提到前面学习过的一个非常熟悉的知识点：线性回归。回忆关于逻辑回归的内容，你应该还能记得当初我们说过逻辑回归起源于线性回归。而感知机作为一种最简单的二分类模型，它其实就是使用了线性回归的方法完成平面数据点的分类。而逻辑回归后面引入了逻辑斯蒂估计来计算分类概率的方法甚至可以被当作是感知机的进步。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/1.png">
+</center>
+
+<p>你还记得上面这张图片吗？当数据点处于线性可分时，我们可以使用一条直线将其分开，而分割线的函数为：</p>
+<p>$$<br>f(x) = w_1x_1+w_2x_2+ \cdots +w_nx_n + b = WX+b \tag{1}<br>$$</p>
+<p>对于公式（1）而言，我们可以认为分割直线方程其实就是针对数据集的每一个特征 $x_1,x_2,⋯,x_n$ 依次乘上权重 $w_1,w_2,⋯,w_n$ 所得。</p>
+<p>当我们确定好公式（1）的参数后，每次输入一个数据点对应的特征 $x_1,x_2,⋯,x_n$ 就能得到对应的函数值 $f(x)$。那么，<strong>怎样判定这个数据点属于哪一个类别呢？</strong></p>
+<p>在二分类问题中，我们最终的类别共有两个，通常被称之为正类别和负类别。而当我们使用线性回归中对应的公式（1）完成分类时，不同于逻辑回归中将 $f(x)$ 传入 <code>sigmoid</code> 函数，这里我们将 $f(x)$ 传入如下所示的 <code>sign</code> 函数。</p>
+<p>$$<br>sign(x) =<br>\begin{cases}<br>+1, &amp; \text{if } x  \geq  0 \\<br>-1, &amp; \text{if } x  &lt;  0<br>\end{cases}<br>\tag{2}<br>$$</p>
+<p><code>sign()</code> 函数又被称之为符号函数，它的函数值只有 <code>2</code> 个。即当自变量 $x≥0$ 时，因变量为 <code>1</code>。同理，当 $x&lt;0$ 时，因变量为 <code>-1</code>。函数图像如下：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/2.PNG">
+</center>
+
+<p>于是，当我们将公式（1）中的 $f(x)$ 传入公式（2），就能得到 $sign(f(x))$ 的值。其中，当 $sign(f(x))=1$ 时，就为正分类点，而 $sign(f(x))=−1$ 时，则为负分类点。</p>
+<p><strong>综上所示</strong>，我们就假设输入空间(特征向量)为 $X \subseteq R^n$，输出空间为 $Y=−1,+1$。输入 $x⊆X$ 表示实例的特征向量，对应于输入空间的点；输出 $y⊆Y$ 表示示例的类别。由输入空间到输出空间的函数如下：</p>
+<p>$$<br>f(x) = sign(w*x +b) \tag{3}<br>$$</p>
+<p><strong>公式（3）就被称之为感知机</strong>。注意，公式（3）中的 $f(x)$ 和公式（1）中的 $f(x)$ 不是同一个 $f(x)$。</p>
+<h3 id="感知机计算流程图"><a href="#感知机计算流程图" class="headerlink" title="感知机计算流程图"></a>感知机计算流程图</h3><p>上面，我们针对感知机进行了数学推导。为了更加清晰地展示出感知机的计算过程，我们将其绘制成如下所示的流程图。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/3.png">
+</center>
+
+<h3 id="感知机的损失函数"><a href="#感知机的损失函数" class="headerlink" title="感知机的损失函数"></a>感知机的损失函数</h3><p>前面的文章中，我们已经介绍过损失函数的定义。在感知机的学习过程中，我们同样需要确定每一个特征变量对应的参数，而损失函数的极小值往往就意味着参数最佳。那么，感知机学习的策略，也就是其通常采用哪种形式的损失函数呢？</p>
+<p>如下图所示，当我们使用一条直线去分隔一个线性可分的数据集时，有可能会出现「误分类」的状况。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/4.png">
+</center>
+
+<p>而在感知机的学习过程中，我们通常会使用误分类点到分割线（面）的距离去定义损失函数。</p>
+<h4 id="点到直线的距离"><a href="#点到直线的距离" class="headerlink" title="点到直线的距离"></a>点到直线的距离</h4><p>中学阶段，我们学过点到直线的距离公式推导。对于 $n$ 维实数向量空间中任意一点 $x_0$ 到直线 $W⋅x+b=0$ 的距离为：</p>
+<p>$$<br>d= \dfrac{1}{\parallel W\parallel}|W*x_{0}+b| \tag{4}<br>$$</p>
+<p>其中 $||W||$ 表示 $L_2$ 范数，即向量各元素的平方和然后开方。</p>
+<p>然后，对于误分类点 $(xi,yi)$ 来讲，公式（5）成立。</p>
+<p>$$<br>y_i(W * x_{i}+b)&gt;0 \tag{5}<br>$$</p>
+<p>那么，误分类点 $(xi,yi)$ 到分割线（面）的距离就为：</p>
+<p>$$<br>d=-\dfrac{1}{\parallel W\parallel}y_i(W*x_{i}+b) \tag{6}<br>$$</p>
+<p>于是，假设所有误分类点的集合为 $M$，全部误分类点到分割线（面）的距离就为：</p>
+<p>$$<br>-\dfrac{1}{\parallel W\parallel}\sum_{x_i\epsilon M} y_i(W*x_{i}+b) \tag{7}<br>$$</p>
+<p><strong>最后得到感知机的损失函数</strong>为：</p>
+<p>$$<br>J(W,b) = - \sum_{x_i\epsilon M} y_i(W*x_{i}+b) \tag{8}<br>$$</p>
+<p>从公式（8）可以看出，损失函数 $J(W,b)$ 是非负的。也就是说，当没有误分类点时，损失函数的值为 <code>0</code>。同时，误分类点越少，误分类点距离分割线（面）就越近，损失函数值就越小。同时，损失函数 $J(W,b)$ 是连续可导函数。</p>
+<h3 id="随机梯度下降法"><a href="#随机梯度下降法" class="headerlink" title="随机梯度下降法"></a>随机梯度下降法</h3><p>当我们在实现分类时，最终想要的结果肯定是没有误分类的点，也就是损失函数取极小值时的结果。在逻辑回归的中，为了找到损失函数的极小值，我们使用到了一种叫做梯度下降法（Gradient descent）。而在这篇中，我们尝试一种梯度下降法的改进方法，也称之为随机梯度下降法（Stochastic gradient descent，简称：SGD)。</p>
+<p>实验 SGD 计算公式（8）的极小值时，首先任选一个分割面 $W_0$ 和 $b_0$，然后使用梯度下降法不断地极小化损失函数：</p>
+<p>$$<br>min_{W,b} J(W,b) = - \sum_{x_i\epsilon M} y_i(W*x_{i}+b) \tag{9}<br>$$</p>
+<p>随机梯度下降的特点在于，极小化过程中不是一次针对 $M$ 中的所有误分类点执行梯度下降，而是每次<strong>随机</strong>选取一个误分类点执行梯度下降。等到更新完 $W$ 和 $b$ 之后，下一次再另随机选择一个误分类点执行梯度下降直到收敛。</p>
+<p>计算损失函数的偏导数：</p>
+<p>$$<br>\frac{\partial J(W,b)}{\partial W} = - \sum_{x_i\epsilon M}y_ix_i \ \frac{\partial J(W,b)}{\partial b} = - \sum_{x_i\epsilon M}y_i \tag{10}<br>$$</p>
+<p>如果 $yi(W∗xi+b)≤0$ 更新 $W$ 和 $b$：</p>
+<p>$$<br>W \leftarrow   W + \lambda y_ix_i \ b \leftarrow  b + \lambda y_i \tag{11}<br>$$</p>
+<p>同前面的梯度下降一致，$λ$ 为学习率，也就是每次梯度下降的步长。</p>
+<p>下面，我们使用 Python 将上面的随机梯度下降算法进行实现。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">感知机随机梯度下降算法实现</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">perceptron_sgd</span>(<span class="params">X, Y, alpha, epochs</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    参数:</span></span><br><span class="line"><span class="string">    X -- 自变量数据矩阵</span></span><br><span class="line"><span class="string">    Y -- 因变量数据矩阵</span></span><br><span class="line"><span class="string">    alpha -- lamda 参数</span></span><br><span class="line"><span class="string">    epochs -- 迭代次数</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    返回:</span></span><br><span class="line"><span class="string">    w -- 权重系数</span></span><br><span class="line"><span class="string">    b -- 截距项</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    w = np.zeros(<span class="built_in">len</span>(X[<span class="number">0</span>])) <span class="comment"># 初始化参数为 0</span></span><br><span class="line">    b = np.zeros(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(epochs): <span class="comment"># 迭代</span></span><br><span class="line">        <span class="keyword">for</span> i, x <span class="keyword">in</span> <span class="built_in">enumerate</span>(X):</span><br><span class="line">            <span class="keyword">if</span> ((np.dot(X[i], w)+b)*Y[i]) &lt;= <span class="number">0</span>: <span class="comment"># 判断条件</span></span><br><span class="line">                w = w + alpha*X[i]*Y[i] <span class="comment"># 更新参数</span></span><br><span class="line">                b = b + alpha*Y[i]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> w, b</span><br></pre></td></tr></table></figure>
+
+<h3 id="感知机分类实例"><a href="#感知机分类实例" class="headerlink" title="感知机分类实例"></a>感知机分类实例</h3><p>前面的内容中，我们讨论了感知机的计算流程，感知机的损失函数，以及如何使用随机梯度下降求解感知机的参数。理论说了这么多，下面就举一个实际的例子看一看。</p>
+<h4 id="示例数据集"><a href="#示例数据集" class="headerlink" title="示例数据集"></a>示例数据集</h4><p>为了方便绘图到二维平面，这里只使用包含两个特征变量的数据，数据集名称为 <code>course-12-data.csv</code>。</p>
+<blockquote>
+<p>数据集下载 👉 <a target="_blank" rel="noopener" href="http://labfile.oss.aliyuncs.com/courses/1081/course-12-data.csv">传送门</a></p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;加载数据集</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line">df = pd.read_csv(<span class="string">&quot;course-12-data.csv&quot;</span>, header=<span class="number">0</span>) <span class="comment"># 加载数据集</span></span><br><span class="line">df.head() <span class="comment"># 预览前 5 行数据</span></span><br></pre></td></tr></table></figure>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/output_00.png">
+</center>
+
+<p>可以看到，该数据集共有两个特征变量 <code>X0</code> 和 <code>X1</code>, 以及一个目标值 <code>Y</code>。其中，目标值 <code>Y</code> 只包含 <code>-1</code> 和 <code>1</code>。我们尝试将该数据集绘制成图，看一看数据的分布情况。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;绘制数据集</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line">%matplotlib inline</span><br><span class="line"></span><br><span class="line">plt.figure(figsize=(<span class="number">10</span>, <span class="number">6</span>))</span><br><span class="line">plt.scatter(df[<span class="string">&#x27;X0&#x27;</span>],df[<span class="string">&#x27;X1&#x27;</span>], c=df[<span class="string">&#x27;Y&#x27;</span>])</span><br></pre></td></tr></table></figure>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/output_71_1.png">
+</center>
+
+<h4 id="感知机训练"><a href="#感知机训练" class="headerlink" title="感知机训练"></a>感知机训练</h4><p>接下来，我们就使用感知机求解最佳分割线。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">X = df[[<span class="string">&#x27;X0&#x27;</span>,<span class="string">&#x27;X1&#x27;</span>]].values</span><br><span class="line">Y = df[<span class="string">&#x27;Y&#x27;</span>].values</span><br><span class="line"></span><br><span class="line">alpha = <span class="number">0.1</span></span><br><span class="line">epochs = <span class="number">150</span></span><br><span class="line"></span><br><span class="line">perceptron_sgd(X, Y, alpha, epochs)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(array([ 4.93, -6.98]), array([-3.3])) </span><br></pre></td></tr></table></figure>
+
+<p>于是，我们求得的最佳分割线方程为：</p>
+<p>$$<br>f(x) = 4.93 * x_{1} - 6.98 * x_{2} -3.3 \tag{12}<br>$$</p>
+<p>此时，可以求解一下分类的正确率：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">L = perceptron_sgd(X, Y, alpha, epochs)</span><br><span class="line">w1 = L[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">w2 = L[<span class="number">0</span>][<span class="number">1</span>]</span><br><span class="line">b = L[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">z = np.dot(X, np.array([w1, w2]).T) + b</span><br><span class="line">np.sign(z)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">array([-1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1.,</span><br><span class="line">       -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1.,  1.,</span><br><span class="line">       -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1., -1.,</span><br><span class="line">       -1., -1.,  1., -1., -1., -1., -1., -1., -1., -1., -1.,  1.,  1.,</span><br><span class="line">        1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,</span><br><span class="line">        1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,</span><br><span class="line">        1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,</span><br><span class="line">        1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,</span><br><span class="line">        1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,</span><br><span class="line">        1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,</span><br><span class="line">        1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,</span><br><span class="line">        1.,  1.,  1.,  1.,  1.,  1.,  1.]) </span><br></pre></td></tr></table></figure>
+
+<p>为了方便，我们就直接使用 <code>scikit-learn</code> 提供的准确率计算方法 <code>accuracy_score()</code>，该方法相信你已经非常熟悉了</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> accuracy_score</span><br><span class="line"></span><br><span class="line">accuracy_score(Y, np.sign(z))</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0.9866666666666667 </span><br></pre></td></tr></table></figure>
+
+<p>所以，最终的分类准确率约为 <code>0.987</code>。</p>
+<h4 id="绘制决策边界线"><a href="#绘制决策边界线" class="headerlink" title="绘制决策边界线"></a>绘制决策边界线</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 绘制轮廓线图，不需要掌握</span></span><br><span class="line">plt.figure(figsize=(<span class="number">10</span>, <span class="number">6</span>))</span><br><span class="line">plt.scatter(df[<span class="string">&#x27;X0&#x27;</span>],df[<span class="string">&#x27;X1&#x27;</span>], c=df[<span class="string">&#x27;Y&#x27;</span>])</span><br><span class="line"></span><br><span class="line">x1_min, x1_max = df[<span class="string">&#x27;X0&#x27;</span>].<span class="built_in">min</span>(), df[<span class="string">&#x27;X0&#x27;</span>].<span class="built_in">max</span>(),</span><br><span class="line">x2_min, x2_max = df[<span class="string">&#x27;X1&#x27;</span>].<span class="built_in">min</span>(), df[<span class="string">&#x27;X1&#x27;</span>].<span class="built_in">max</span>(),</span><br><span class="line"></span><br><span class="line">xx1, xx2 = np.meshgrid(np.linspace(x1_min, x1_max), np.linspace(x2_min, x2_max))</span><br><span class="line">grid = np.c_[xx1.ravel(), xx2.ravel()]</span><br><span class="line"></span><br><span class="line">probs = (np.dot(grid, np.array([L[<span class="number">0</span>][<span class="number">0</span>], L[<span class="number">0</span>][<span class="number">1</span>]]).T) + L[<span class="number">1</span>]).reshape(xx1.shape)</span><br><span class="line">plt.contour(xx1, xx2, probs, [<span class="number">0</span>], linewidths=<span class="number">1</span>, colors=<span class="string">&#x27;red&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/output_87_0.png">
+</center>
+
+<p>可以看到，上图中的红色直线就是我们最终的分割线，分类的效果还是不错的。</p>
+<h4 id="绘制损失函数变换曲线"><a href="#绘制损失函数变换曲线" class="headerlink" title="绘制损失函数变换曲线"></a>绘制损失函数变换曲线</h4><p>除了绘制决策边界，也就是分割线。我们也可以将损失函数的变化过程绘制处理，看一看梯度下降的执行过程。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;计算每次迭代后的损失函数值</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">perceptron_loss</span>(<span class="params">X, Y, alpha, epochs</span>):</span></span><br><span class="line">    </span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    参数:</span></span><br><span class="line"><span class="string">    X -- 自变量数据矩阵</span></span><br><span class="line"><span class="string">    Y -- 因变量数据矩阵</span></span><br><span class="line"><span class="string">    alpha -- lamda 参数</span></span><br><span class="line"><span class="string">    epochs -- 迭代次数</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    返回:</span></span><br><span class="line"><span class="string">    loss_list -- 每次迭代损失函数值列表</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    </span><br><span class="line">    w = np.zeros(<span class="built_in">len</span>(X[<span class="number">0</span>])) <span class="comment"># 初始化参数为 0</span></span><br><span class="line">    b = np.zeros(<span class="number">1</span>)</span><br><span class="line">    loss_list = []</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(epochs): <span class="comment"># 迭代</span></span><br><span class="line">        loss_init = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> i, x <span class="keyword">in</span> <span class="built_in">enumerate</span>(X):</span><br><span class="line">            <span class="keyword">if</span> ((np.dot(X[i], w)+b)*Y[i]) &lt;= <span class="number">0</span>: <span class="comment"># 判断条件</span></span><br><span class="line">                loss_init += (((np.dot(X[i], w)+b)*Y[i]))</span><br><span class="line">                w = w + alpha*X[i]*Y[i] <span class="comment"># 更新参数</span></span><br><span class="line">                b = b + alpha*Y[i]</span><br><span class="line">        loss_list.append(loss_init * <span class="number">-1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> loss_list</span><br><span class="line">    </span><br><span class="line">loss_list = perceptron_loss(X, Y, alpha, epochs)</span><br><span class="line"></span><br><span class="line">plt.figure(figsize=(<span class="number">10</span>, <span class="number">6</span>))</span><br><span class="line">plt.plot([i <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(loss_list))], loss_list)</span><br><span class="line">plt.xlabel(<span class="string">&quot;Learning rate &#123;&#125;, Epochs &#123;&#125;&quot;</span>.<span class="built_in">format</span>(alpha, epochs))</span><br><span class="line">plt.ylabel(<span class="string">&quot;Loss function&quot;</span>)</span><br></pre></td></tr></table></figure>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/output_94_1.png">
+</center>
+
+<p>如上图所示，你会发现，让我们按照 <code>0.1</code> 的学习率迭代 <code>150</code> 次后，损失函数依旧无法到达 <code>0</code>。一般情况下，当我们的数据不是线性可分时，损失函数就会出现如上图所示的震荡线性。</p>
+<p>不过，如果你仔细观察上方数据的散点图，你会发现这个数据集看起来是线性可分的。那么，当数据集线性可分，却造成损失函数变换曲线震荡的原因一般有两点：<strong>学习率太大</strong>或者<strong>迭代次数太少</strong>。</p>
+<p>其中，迭代次数太少很好理解，也就是说我们迭代的次数还不足以求得极小值。至于学习率太大，可以看下方的示意图。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/5.png">
+</center>
+
+<p>如上图所示，当我们的学习率太大时，往往容易出现在损失函数底部来回震荡的现象而无法到达极小值点。所以，面对上面这种情况，我们可以采取减小学习率 + 增加迭代次数的方法找到损失函数极小值点。</p>
+<p>所以，下面就再试一次。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">alpha &#x3D; 0.05 # 减小学习率</span><br><span class="line">epochs &#x3D; 1000 # 增加迭代次数</span><br><span class="line"></span><br><span class="line">loss_list &#x3D; perceptron_loss(X, Y, alpha, epochs)</span><br><span class="line"></span><br><span class="line">plt.figure(figsize&#x3D;(10, 6))</span><br><span class="line">plt.plot([i for i in range(len(loss_list))], loss_list)</span><br><span class="line">plt.xlabel(&quot;Learning rate &#123;&#125;, Epochs &#123;&#125;&quot;.format(alpha, epochs))</span><br><span class="line">plt.ylabel(&quot;Loss function&quot;)</span><br></pre></td></tr></table></figure>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/output_101_1.png">
+</center>
+
+<p>可以看到，当迭代次数约为 <code>700</code> 次，即上图后半段时，损失函数的值等于 <code>0</code>。根据我们在 <code>1.3</code> 小节中介绍的内容，当损失函数为 <code>0</code> 时，就代表没有误分类点存在。</p>
+<p>此时，我们再一次计算分类准确率。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">L = perceptron_sgd(X, Y, alpha, epochs)</span><br><span class="line">z = np.dot(X, L[<span class="number">0</span>].T) + L[<span class="number">1</span>]</span><br><span class="line">accuracy_score(Y, np.sign(z))</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1.0 </span><br></pre></td></tr></table></figure>
+
+<p>和损失函数变化曲线得到的结论一致，分类准确率已经 <code>100%</code>，表示全部数据点被正确分类。</p>
+<h2 id="人工神经网络"><a href="#人工神经网络" class="headerlink" title="人工神经网络"></a>人工神经网络</h2><center>
+<iframe src="//player.bilibili.com/player.html?aid=15532370&amp;cid=25368631&amp;page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" height="450px" width="100%"> </iframe>
+</center>
+
+<div style="color: #999;font-size: 12px;text-align: center;">神经网络的结构 | 视频来源：<a href="https://www.bilibili.com/video/av15532370" target="_blank" rel="noopener">3Blue1Brown</a></div>
+
+<p>上面的内容中，我们已经了解到了什么是感知机，以及如何构建一个感知机分类模型。你会发现，感知机只能处理二分类问题，且必须是线性可分问题。如果是这样的话，该方法的局限性就比较大了。那么，面对线性不可分或者多分类问题时，我们有没有一个更好的方法呢？</p>
+<h3 id="多层感知机与人工神经网络"><a href="#多层感知机与人工神经网络" class="headerlink" title="多层感知机与人工神经网络"></a>多层感知机与人工神经网络</h3><p>这里，就要提到本文的主角，也就是人工神经网络（英语：Artificial neural network，简称：ANN）。如果你第一次接触到人工神经网络，不要将其想的太神秘。其实，上面的感知机模型就是一个人工神经网络，只不过它是一个结构简单的单层神经网络。而如果我们要解决线性不可分或者多分类问题，往往会尝试将多个感知机组合在一起，变成一个更复杂的神经网络结构。</p>
+<div style="color: #999;font-size: 12px;font-style: italic;">由于一些历史遗留问题，感知机、多层感知机、人工神经网络三种说法界限模糊，文中介绍到的人工神经网络从某种意义上代指多层感知机。</div>
+
+<p>在上文 <code>1.2</code> 小节中，我们通过一张图展示了感知机的工作流程，我们将该流程图进一步精简如下：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/6.png">
+</center>
+
+<p>这张图展示了一个感知机模型的执行流程。我们可以把输入称之为「输入层」，输出称之为「输出层」。对于像这样只包含一个输入层的网络结构就可以称之为单层神经网络结构。</p>
+<p>单个感知机组成了单层神经网络，如果我们将一个感知机的输出作为另一个感知机的输入，就组成了多层感知机，也就是一个多层神经网络。其中，我们将输入和输出层之间的称为隐含层。如下图所示，这就是包含 <code>1</code> 个隐含层的神经网络结构。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/7.png">
+</center>
+
+<p>一个神经网络结构在计算层数的时候，我们一般只计算输入和隐含层的数量，即上方是一个 <code>2</code> 层神经网络结构。</p>
+<h3 id="激活函数"><a href="#激活函数" class="headerlink" title="激活函数"></a>激活函数</h3><p>目前，我们已经接触过逻辑回归、感知机、多层感知机与人工神经网络 <code>4</code> 个概念。你可能隐约感觉到，似乎这 <code>4</code> 种方法都与线性函数有关，而区别在于对线性函数的因变量的不同处理方式上面。</p>
+<p>$$<br>f(x) = w_1x_1+w_2x_2+ \cdots +w_nx_n + b = WX+b \tag{13}<br>$$</p>
+<ul>
+<li>对于逻辑回归而言，我们是采用了 $sigmoid$ 函数将 $f(x)$ 转换为概率，最终实现二分类。</li>
+<li>对于感知机而言，我们是采用了 $sign$ 函数将 $f(x)$ 转换为 <code>-1 和 +1</code> 最终实现二分类。</li>
+<li>对于多层感知机而言，具有多层神经网络结构，在 $f(x)$ 的处理方式上，一般会有更多的操作。</li>
+</ul>
+<p>于是，$sigmoid$ 函数和 $sign$ 函数还有另外一个称谓，叫做「激活函数（Activation function）」。听到激活函数，大家首先不要觉得它有多么的高级。之所以有这样一个称谓，是因为函数本身有一些特点，但归根结底还是数学函数。下面，我们就列举一下常见的激活函数及其图像。</p>
+<h4 id="sigmoid-函数"><a href="#sigmoid-函数" class="headerlink" title="$sigmoid$ 函数"></a>$sigmoid$ 函数</h4><p>$sigmoid$ 函数应该已经非常熟悉了吧，它的公式如下：</p>
+<p>$$<br>sigmoid(x)=\frac{1}{1+e^{-x}} \tag{14}<br>$$</p>
+<p>$sigmoid$ 函数的图像呈 S 型，函数值介于 $(0,1)$ 之间：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/8.png">
+</center>
+
+<h4 id="Tanh-函数"><a href="#Tanh-函数" class="headerlink" title="$Tanh$ 函数"></a>$Tanh$ 函数</h4><p>$Tanh$ 函数与 $sigmoid$ 函数的图像很相似，都呈 S 型，只不过 $Tanh$ 函数值介于 $(-1,1)$ 之间，公式如下：</p>
+<p>$$<br>tanh(x)=\frac{1-e^{-2x}}{1+e^{-2x}}\tag{15}<br>$$</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/9.png">
+</center>
+
+<h4 id="ReLU-函数"><a href="#ReLU-函数" class="headerlink" title="$ReLU$ 函数"></a>$ReLU$ 函数</h4><p>$ReLU$ 函数全称叫做 Rectified Linear Unit，也就是修正线性单元，公式如下：</p>
+<p>$$<br>ReLU(x) = max(0,x)\tag{16}<br>$$</p>
+<p>$ReLU$ 有很多优点，比如收敛速度会较快且不容易出现梯度消失。由于这次不会用到，我们之后再说。$ReLU$的图像如下：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/10.png">
+</center>
+
+<h4 id="激活函数的作用"><a href="#激活函数的作用" class="headerlink" title="激活函数的作用"></a>激活函数的作用</h4><p>上面列举了 3 种常用的激活函数，其中 $sigmoid$ 函数是介绍的人工神经网络中十分常用的一种激活函数。谈到激活函数的作用，直白地讲就是针对数据进行非线性变换。只是不同的激活函数适用于不同的场景，而这些都是机器学习专家根据应用经验总结得到的。</p>
+<p>在神经网络结构中，我们通过线性函数不断的连接输入和输出。你可以设想，在这种结构中，每一层输出都是上层输入的线性变换。于是，无论神经网络有多少层，最终输出都是输入的线性组合。这样的话，单层神经网络和多层神经网络有什么区别呢？（没有区别）</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/11.png">
+</center>
+
+<p>如上图所示，线性变换的多重组合依旧还是线性变换。如果我们在网络结构中加入激活函数，就相当于引入了非线性因素，这样就可以解决线性模型无法完成的分类任务。</p>
+<h3 id="反向传播算法（BP）直观认识"><a href="#反向传播算法（BP）直观认识" class="headerlink" title="反向传播算法（BP）直观认识"></a>反向传播算法（BP）直观认识</h3><center>
+<iframe src="//player.bilibili.com/player.html?aid=16577449&amp;cid=27038097&amp;page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" height="450px" width="100%"> </iframe>
+</center>
+
+<div style="color: #999;font-size: 12px;text-align: center;">直观理解反向传播 | 视频来源：<a href="https://www.bilibili.com/video/av16577449/?p=1" target="_blank" rel="noopener">3Blue1Brown</a></div>
+
+<p>前面感知机的章节中，我们定义了一个损失函数，并通过一种叫做随机梯度下降的方法去求解最优参数。如果你仔细观察随机梯度下降的过程，其实就是通过求解偏导数并组合成梯度用于更新权重 $W$ 和 $b$。感知机只有一层网络结构，求解梯度的过程还比较简单。但是，当我们组合成多层神经网络之后，更新权重的过程就变得复杂起来，而反向传播算法正是为了快速求解梯度而生。</p>
+<p>反向传播的算法说起来很简单，但要顺利理解还比较复杂。这里，我们引用了波兰 AGH 科技大学的一篇 <a target="_blank" rel="noopener" href="http://galaxy.agh.edu.pl/~vlsi/AI/backp_t_en/backprop.html">科普文章</a> 中的配图来帮助理解反向传播的过程。</p>
+<p>下图呈现了一个经典的 <code>3</code> 层神经网络结构，其包含有 <code>2</code> 个输入 $x_1$ 和 $x_2$ 以及 <code>1</code> 个输出 $y$。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/12.png">
+</center>
+
+<p>网络中的每个紫色单元代表一个独立的神经元，它分别由两个单元组成。一个单元是权重和输入信号，而另一个则是上面提到的激活函数。其中，$e$ 代表激活信号，所以 $y=f(e)$ 就是被激活函数处理之后的非线性输出，也就是整个神经元的输出。</p>
+<div style="color: #999;font-size: 12px;font-style: italic;">注：此处与下文使用g()作为激活函数稍有不同</div>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/13.png">
+</center>
+
+<p>下面开始训练神经网络，训练数据由输入信号 $x_1$ 和 $x_2$ 以及期望输出 $z$ 组成，首先计算第 1 个隐含层中第 1 个神经元 $y1=f1(e)$ 对应的值。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/14.png">
+</center>
+
+<p>接下来，计算第 1 个隐含层中第 2 个神经元 $y2=f2(e)$ 对应的值。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/15.png">
+</center>
+
+<p>然后是计算第 1 个隐含层中第 3 个神经元 $y3=f3(e)$ 对应的值。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/16.png">
+</center>
+
+<p>与计算第 1 个隐含层的过程相似，我们可以计算第 2 个隐含层的数值。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/17.png">
+</center>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/18.png">
+</center>
+
+<p>最后，得到输出层的结果：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/19.png">
+</center>
+
+<p>上面这个过程被称为前向传播过程，那什么是反向传播呢？接着来看：</p>
+<p>当我们得到输出结果 $y$ 时，可以与期望输出 $z$ 对比得到误差 $δ$。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/20.png">
+</center>
+
+<p>然后，我们将计算得到的误差 $δ$ 沿着神经元回路反向传递到前 1 个隐含层，而每个神经元对应的误差为传递过来的误差乘以权重。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/21.png">
+</center>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/22.png">
+</center>
+
+<p>同理，我们将第 2 个隐含层的误差继续向第 1 个隐含层反向传递。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/23.png">
+</center>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/24.png">
+</center>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/25.png">
+</center>
+
+<p>此时，我们就可以利用反向传递过来的误差对从输入层到第 1 个隐含层之间的权值 $w$ 进行更新，如下图所示：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/26.png">
+</center>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/27.png">
+</center>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/28.png">
+</center>
+
+<p>同样，对第 1 个隐含层与第 2 个隐含层之间的权值 $w$ 进行更新，如下图所示：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/29.png">
+</center>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/30.png">
+</center>
+
+<p>最后，更新第 2 个隐含层与输出层之间的权值 $w$ ，如下图所示：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/31.png">
+</center>
+
+<p>图中的 $η$ 表示学习速率。这就完成了一个迭代过程。更新完权重之后，又开始下一轮的前向传播得到输出，再反向传播误差更新权重，依次迭代下去。</p>
+<p>所以，反向传播其实代表的是反向传播误差。</p>
+<h3 id="使用-Python-实现人工神经网络"><a href="#使用-Python-实现人工神经网络" class="headerlink" title="使用 Python 实现人工神经网络"></a>使用 Python 实现人工神经网络</h3><p>上面的内容，我们介绍了人工神经网络的构成和最重要的反向传播算法。接下来，尝试通过 Python 来实现一个神经网络运行的完整流程。</p>
+<h4 id="定义神经网络结构"><a href="#定义神经网络结构" class="headerlink" title="定义神经网络结构"></a>定义神经网络结构</h4><p>为了让推导过程足够清晰，这里我们只构建包含 1 个隐含层的人工神经网络结构。其中，输入层为 2 个神经元，隐含层为 3 个神经元，并通过输出层实现 2 分类问题的求解。该神经网络的结构如下：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/32.png">
+</center>
+
+<p>在此中，我们使用的激活函数为 $sigmoid$ 函数：</p>
+<p>$$<br>\mathit{sigmoid}(x) = \frac{1}{1+e^{-x}}       \tag{17a}<br>$$</p>
+<p>由于下面要使用 $sigmoid$ 函数的导数，所以同样将其导数公式写出来：</p>
+<p>$$<br>\Delta \mathit{sigmoid}(x)  = \mathit{sigmoid}(x)(1 - \mathit{sigmoid}(x))    \tag{17b}<br>$$</p>
+<p>然后，我们通过 Python 实现公式（17）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sigmoid 函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sigmoid</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> / (<span class="number">1</span> + np.exp(-x))</span><br><span class="line"></span><br><span class="line"><span class="comment"># sigmoid 函数求导</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sigmoid_derivative</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> sigmoid(x) * (<span class="number">1</span> - sigmoid(x))</span><br></pre></td></tr></table></figure>
+
+<h4 id="前向传播"><a href="#前向传播" class="headerlink" title="前向传播"></a>前向传播</h4><p>前向（正向）传播中，每一个神经元的计算流程为：<strong>线性变换 → 激活函数→输出值</strong>。</p>
+<p>同时，我们约定：</p>
+<ul>
+<li>$Z$ 表示隐含层输出，$Y$ 则为输出层最终输出。</li>
+<li>$w_ij$ 表示从第 $i$ 层的第 $j$ 个权重。</li>
+</ul>
+<p>于是，上图中的前向传播的代数计算过程如下。</p>
+<p>神经网络的输入 $X$，第一层权重 $W_1$，第二层权重 $W_2$。为了演示方便，$X$ 为单样本，因为是矩阵运算，我们很容易就能扩充为多样本输入。</p>
+<p>$$<br>X = \begin{bmatrix} x_{1} &amp; x_{2} \end{bmatrix} \tag{18}<br>$$</p>
+<p>$$<br>W_1 = \begin{bmatrix} w_{11} &amp; w_{12} &amp; w_{13}\  w_{14} &amp; w_{15} &amp; w_{16}\  \end{bmatrix} \tag{19}<br>$$</p>
+<p>$$<br>W_2 = \begin{bmatrix} w_{21} \ w_{22} \ w_{23} \end{bmatrix} \tag{20}<br>$$</p>
+<p>接下来，计算隐含层神经元输出 $Z$（线性变换 → 激活函数）。同样，为了使计算过程足够清晰，我们这里将截距项表示为 0。</p>
+<p>$$<br>Z = \mathit{sigmoid}(X \cdot W_{1}) \tag{21}<br>$$</p>
+<p>最后，计算输出层 $Y$（线性变换 → 激活函数）：</p>
+<p>$$<br>Y = \mathit{sigmoid}(Z \cdot W_{2}) \tag{22}<br>$$</p>
+<p>下面实现前向传播计算过程，将上面的公式转化为代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 示例样本</span></span><br><span class="line">X = np.array([[<span class="number">1</span>, <span class="number">1</span>]])</span><br><span class="line">y = np.array([[<span class="number">1</span>]])</span><br><span class="line"></span><br><span class="line">X, y</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(array([[1, 1]]), array([[1]])) </span><br></pre></td></tr></table></figure>
+
+<p>然后，随机初始化隐含层权重。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">W1 = np.random.rand(<span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">W2 = np.random.rand(<span class="number">3</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">W1, W2</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(array([[0.4985742 , 0.16703231, 0.51487393],</span><br><span class="line">        [0.63075313, 0.46386686, 0.44365266]]), array([[0.69320812],</span><br><span class="line">        [0.74352002],</span><br><span class="line">        [0.2403471 ]])) </span><br></pre></td></tr></table></figure>
+
+<p>前向传播的过程实现基于公式（21）和公式（22）完成。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">input_layer = X <span class="comment"># 输入层</span></span><br><span class="line">hidden_layer = sigmoid(np.dot(input_layer, W1)) <span class="comment"># 隐含层，公式 20</span></span><br><span class="line">output_layer = sigmoid(np.dot(hidden_layer, W2)) <span class="comment"># 输出层，公式 22</span></span><br><span class="line"></span><br><span class="line">output_layer</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">array([[0.76546658]]) </span><br></pre></td></tr></table></figure>
+
+<h4 id="反向传播"><a href="#反向传播" class="headerlink" title="反向传播"></a>反向传播</h4><center>
+<div class="media-wrap">
+<iframe src="//player.bilibili.com/player.html?aid=16577449&amp;cid=27038098&amp;page=2" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" height="450px" width="100%"></iframe>
+</div>
+</center>
+
+<div style="color: #999;font-size: 12px;text-align: center;">反向传播的微积分原理 | 视频来源：<a href="https://www.bilibili.com/video/av16577449/?p=2" target="_blank" rel="noopener">3Blue1Brown</a></div>
+
+<p>接下来，我们使用梯度下降法的方式来优化神经网络的参数。那么首先需要定义损失函数，然后计算损失函数关于神经网络中各层的权重的偏导数（梯度）。</p>
+<p>此时，设神经网络的输出值为 <code>Y</code>，真实值为 <code>y</code>。然后，定义平方损失函数如下：</p>
+<p>$$<br>Loss(y, Y) = \sum (y - Y)^2 \tag{23}<br>$$</p>
+<p>接下来，求解梯度 $\frac{\partial Loss(y, Y)}{\partial{W_2}}$，需要使用链式求导法则：</p>
+<p>$$<br>\frac{\partial Loss(y, Y)}{\partial{W_2}} = \frac{\partial Loss(y, Y)}{\partial{Y}} \frac{\partial Y}{\partial{W_2}}\tag{24a}<br>$$</p>
+<p>$$<br>\frac{\partial Loss(y, Y)}{\partial{W_2}} = 2(Y-y) * \Delta \mathit{sigmoid}(Z \cdot W_2) \cdot Z\tag{24b}<br>$$</p>
+<p>同理，梯度 $\frac{\partial Loss(y, Y)}{\partial{W_1}}$ 得：</p>
+<p>$$<br>\frac{\partial Loss(y, Y)}{\partial{W_1}} = \frac{\partial Loss(y, Y)}{\partial{Y}} \frac{\partial Y }{\partial{Z}} \frac{\partial Z}{\partial{W_1}} \tag{25a}<br>$$</p>
+<p>$$<br>\frac{\partial Loss(y, Y)}{\partial{W_1}} = 2(Y-y) * \Delta \mathit{sigmoid}(Z \cdot W_2) \cdot W_2 * \Delta \mathit{sigmoid}(X \cdot W_1) \cdot X \tag{25b}<br>$$</p>
+<p>其中，$\frac{\partial Y}{\partial{W_2}}$，$\frac{\partial Y}{\partial{W_1}}$ 分别通过公式（22）和（21）求得。接下来，我们基于公式对反向传播过程进行代码实现。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 公式 24</span></span><br><span class="line">d_W2 = np.dot(hidden_layer.T, (<span class="number">2</span> * (output_layer - y) * </span><br><span class="line">              sigmoid_derivative(np.dot(hidden_layer, W2))))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 公式 25</span></span><br><span class="line">d_W1 = np.dot(input_layer.T,  (</span><br><span class="line">       np.dot(<span class="number">2</span> * (output_layer - y) * sigmoid_derivative(</span><br><span class="line">       np.dot(hidden_layer, W2)), W2.T) * sigmoid_derivative(np.dot(input_layer, W1))))</span><br><span class="line"></span><br><span class="line">d_W2, d_W1</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(array([[-0.06363904],</span><br><span class="line">        [-0.05496356],</span><br><span class="line">        [-0.06086952]]), array([[-0.01077667, -0.01419321, -0.00405499],</span><br><span class="line">        [-0.01077667, -0.01419321, -0.00405499]])) </span><br></pre></td></tr></table></figure>
+
+<p>现在，就可以设置学习率，并对 $W_1$, $W_2$ 进行一次更新了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 梯度下降更新权重, 学习率为 0.05</span></span><br><span class="line"></span><br><span class="line">W1 -= <span class="number">0.05</span> * d_W1 <span class="comment"># 如果上面是 y - output_layer，则改成 +=</span></span><br><span class="line">W2 -= <span class="number">0.05</span> * d_W2</span><br><span class="line"></span><br><span class="line">d_W2, d_W1</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(array([[-0.06363904],</span><br><span class="line">        [-0.05496356],</span><br><span class="line">        [-0.06086952]]), array([[-0.01077667, -0.01419321, -0.00405499],</span><br><span class="line">        [-0.01077667, -0.01419321, -0.00405499]])) </span><br></pre></td></tr></table></figure>
+
+<p>以上，我们就实现了单个样本在神经网络中的 1 次前向 → 反向传递，并使用梯度下降完成 1 次权重更新。那么，下面我们完整实现该网络，并对多样本数据集进行学习。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 示例神经网络完整实现</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NeuralNetwork</span>:</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 初始化参数</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, X, y, lr</span>):</span></span><br><span class="line">        self.input_layer = X</span><br><span class="line">        self.W1 = np.random.rand(self.input_layer.shape[<span class="number">1</span>], <span class="number">3</span>)</span><br><span class="line">        self.W2 = np.random.rand(<span class="number">3</span>, <span class="number">1</span>)</span><br><span class="line">        self.y = y</span><br><span class="line">        self.lr = lr</span><br><span class="line">        self.output_layer = np.zeros(self.y.shape)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 前向传播</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self</span>):</span></span><br><span class="line">        self.hidden_layer = sigmoid(np.dot(self.input_layer, self.W1))</span><br><span class="line">        self.output_layer = sigmoid(np.dot(self.hidden_layer, self.W2))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 反向传播</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">backward</span>(<span class="params">self</span>):</span></span><br><span class="line">        d_W2 = np.dot(self.hidden_layer.T, (<span class="number">2</span> * (self.output_layer - self.y) *</span><br><span class="line">                      sigmoid_derivative(np.dot(self.hidden_layer, self.W2))))</span><br><span class="line">        </span><br><span class="line">        d_W1 = np.dot(self.input_layer.T, (</span><br><span class="line">               np.dot(<span class="number">2</span> * (self.output_layer - self.y) * sigmoid_derivative(</span><br><span class="line">               np.dot(self.hidden_layer, self.W2)), self.W2.T) * sigmoid_derivative(</span><br><span class="line">               np.dot(self.input_layer, self.W1))))</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 参数更新</span></span><br><span class="line">        self.W1 -= self.lr * d_W1</span><br><span class="line">        self.W2 -= self.lr * d_W2</span><br></pre></td></tr></table></figure>
+
+<p>接下来，我们使用实验一开始的示例数据集测试，首先我们要对数据形状进行调整，以满足需要。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">X = df[[<span class="string">&#x27;X0&#x27;</span>,<span class="string">&#x27;X1&#x27;</span>]].values <span class="comment"># 输入值</span></span><br><span class="line">y = df[<span class="string">&#x27;Y&#x27;</span>].values.reshape(<span class="built_in">len</span>(X), <span class="number">-1</span>) <span class="comment"># 真实 y，处理成 [[],...,[]] 形状</span></span><br></pre></td></tr></table></figure>
+
+<p>接下来，我们将其输入到网络中，并迭代 100 次：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">nn = NeuralNetwork(X, y, lr=<span class="number">0.001</span>) <span class="comment"># 定义模型</span></span><br><span class="line">loss_list = [] <span class="comment"># 存放损失数值变化</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">    nn.forward() <span class="comment"># 前向传播</span></span><br><span class="line">    nn.backward() <span class="comment"># 反向传播</span></span><br><span class="line">    loss = np.<span class="built_in">sum</span>((y - nn.output_layer) ** <span class="number">2</span>) <span class="comment"># 计算平方损失</span></span><br><span class="line">    loss_list.append(loss)</span><br><span class="line"></span><br><span class="line">print(<span class="string">&quot;final loss:&quot;</span>, loss)</span><br><span class="line">plt.plot(loss_list) <span class="comment"># 绘制 loss 曲线变化图</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">final loss: 133.4221126605534 </span><br></pre></td></tr></table></figure>
+
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Neural%20Network/output_239_2.png">
+</center>
+
+<p>可以看到，损失函数逐渐减小并接近收敛，变化曲线比感知机计算会平滑很多。不过，由于我们去掉了截距项，且网络结构太过简单，导致收敛情况并不理想。本实验重点再于搞清楚 BP 的中间过程，准确度和学习难度不可两全。另外，需要注意的是由于权重是随机初始化，多次运行的结果会不同。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>机器学习|感知机和人工神经网络详解</p><p><a href="http://www.laugh12321.cn/blog/2019/01/31/neural_network/">http://www.laugh12321.cn/blog/2019/01/31/neural_network/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Laugh</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2019-01-31</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2020-10-21</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icon" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/blog/tags/Machine-Learning/">Machine Learning</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/Neural-Network/">Neural Network</a></div><div class="notification is-danger">You need to set <code>install_url</code> to use ShareThis. Please set it in <code>_config.yml</code>.</div></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/alipay-reward-image.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/wechat-reward-image.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/blog/2019/02/01/decision_tree/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">机器学习|决策树详解</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/blog/2019/01/24/seafile_pro_settings/"><span class="level-item">阿里云服务器ECS Ubuntu16.04 + Seafile 搭建私人网盘 （Seafile Pro）</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div class="notification is-danger">You forgot to set the <code>shortname</code> for Disqus. Please set it in <code>_config.yml</code>.</div></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1 is-sticky"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="https://avatars0.githubusercontent.com/u/38065710?s=400&amp;u=80ee4d360562451484188e6f1677fa442720891b&amp;v=4" alt="Laugh"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Laugh</p><p class="is-size-6 is-block">The life I want, there is no shortcut.</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Northern Hemisphere</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/blog/archives"><p class="title">16</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/blog/categories"><p class="title">15</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/blog/tags"><p class="title">22</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/laugh12321" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/laugh12321"><i class="fab fa-github"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Facebook" href="https://facebook.com"><i class="fab fa-facebook"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Twitter" href="https://twitter.com"><i class="fab fa-twitter"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Dribbble" href="https://dribbble.com"><i class="fab fa-dribbble"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="RSS" href="/blog/"><i class="fas fa-rss"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#感知机"><span class="level-left"><span class="level-item">1</span><span class="level-item">感知机</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#感知机的推导过程"><span class="level-left"><span class="level-item">1.1</span><span class="level-item">感知机的推导过程</span></span></a></li><li><a class="level is-mobile" href="#感知机计算流程图"><span class="level-left"><span class="level-item">1.2</span><span class="level-item">感知机计算流程图</span></span></a></li><li><a class="level is-mobile" href="#感知机的损失函数"><span class="level-left"><span class="level-item">1.3</span><span class="level-item">感知机的损失函数</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#点到直线的距离"><span class="level-left"><span class="level-item">1.3.1</span><span class="level-item">点到直线的距离</span></span></a></li></ul></li><li><a class="level is-mobile" href="#随机梯度下降法"><span class="level-left"><span class="level-item">1.4</span><span class="level-item">随机梯度下降法</span></span></a></li><li><a class="level is-mobile" href="#感知机分类实例"><span class="level-left"><span class="level-item">1.5</span><span class="level-item">感知机分类实例</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#示例数据集"><span class="level-left"><span class="level-item">1.5.1</span><span class="level-item">示例数据集</span></span></a></li><li><a class="level is-mobile" href="#感知机训练"><span class="level-left"><span class="level-item">1.5.2</span><span class="level-item">感知机训练</span></span></a></li><li><a class="level is-mobile" href="#绘制决策边界线"><span class="level-left"><span class="level-item">1.5.3</span><span class="level-item">绘制决策边界线</span></span></a></li><li><a class="level is-mobile" href="#绘制损失函数变换曲线"><span class="level-left"><span class="level-item">1.5.4</span><span class="level-item">绘制损失函数变换曲线</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#人工神经网络"><span class="level-left"><span class="level-item">2</span><span class="level-item">人工神经网络</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#多层感知机与人工神经网络"><span class="level-left"><span class="level-item">2.1</span><span class="level-item">多层感知机与人工神经网络</span></span></a></li><li><a class="level is-mobile" href="#激活函数"><span class="level-left"><span class="level-item">2.2</span><span class="level-item">激活函数</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#sigmoid-函数"><span class="level-left"><span class="level-item">2.2.1</span><span class="level-item">$sigmoid$ 函数</span></span></a></li><li><a class="level is-mobile" href="#Tanh-函数"><span class="level-left"><span class="level-item">2.2.2</span><span class="level-item">$Tanh$ 函数</span></span></a></li><li><a class="level is-mobile" href="#ReLU-函数"><span class="level-left"><span class="level-item">2.2.3</span><span class="level-item">$ReLU$ 函数</span></span></a></li><li><a class="level is-mobile" href="#激活函数的作用"><span class="level-left"><span class="level-item">2.2.4</span><span class="level-item">激活函数的作用</span></span></a></li></ul></li><li><a class="level is-mobile" href="#反向传播算法（BP）直观认识"><span class="level-left"><span class="level-item">2.3</span><span class="level-item">反向传播算法（BP）直观认识</span></span></a></li><li><a class="level is-mobile" href="#使用-Python-实现人工神经网络"><span class="level-left"><span class="level-item">2.4</span><span class="level-item">使用 Python 实现人工神经网络</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#定义神经网络结构"><span class="level-left"><span class="level-item">2.4.1</span><span class="level-item">定义神经网络结构</span></span></a></li><li><a class="level is-mobile" href="#前向传播"><span class="level-left"><span class="level-item">2.4.2</span><span class="level-item">前向传播</span></span></a></li><li><a class="level is-mobile" href="#反向传播"><span class="level-left"><span class="level-item">2.4.3</span><span class="level-item">反向传播</span></span></a></li></ul></li></ul></li></ul></div></div><style>.menu-list > li > a.is-active + .menu-list { display: block; }.menu-list > li > a + .menu-list { display: none; }</style><script src="/blog/js/toc.js" defer></script></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/blog/categories/Algorithm/"><span class="level-start"><span class="level-item">Algorithm</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Algorithm/Sorting-algorithm/"><span class="level-start"><span class="level-item">Sorting algorithm</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/blog/categories/Blog/"><span class="level-start"><span class="level-item">Blog</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Deep-Learning/"><span class="level-start"><span class="level-item">Deep Learning</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/"><span class="level-start"><span class="level-item">Machine Learning</span></span><span class="level-end"><span class="level-item tag">9</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Decision-Tree/"><span class="level-start"><span class="level-item">Decision Tree</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/K-Nearest-Neighbors/"><span class="level-start"><span class="level-item">K-Nearest Neighbors</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Linear-Regression/"><span class="level-start"><span class="level-item">Linear Regression</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Naive-Bayes/"><span class="level-start"><span class="level-item">Naive Bayes</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Neural-Network/"><span class="level-start"><span class="level-item">Neural Network</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Polynomial-Regression/"><span class="level-start"><span class="level-item">Polynomial Regression</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Support-Vector-Machine/"><span class="level-start"><span class="level-item">Support Vector Machine</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/blog/categories/Ubuntu/"><span class="level-start"><span class="level-item">Ubuntu</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Ubuntu/ECS/"><span class="level-start"><span class="level-item">ECS</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Ubuntu/ECS/Seafile/"><span class="level-start"><span class="level-item">Seafile</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li></ul></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/blog/tags/Algorithm/"><span class="tag">Algorithm</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Blog/"><span class="tag">Blog</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Decision-Tree/"><span class="tag">Decision Tree</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Deep-Learning/"><span class="tag">Deep Learning</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/ECS/"><span class="tag">ECS</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/GitHub-Pages/"><span class="tag">GitHub Pages</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Jekyll/"><span class="tag">Jekyll</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/K-Nearest-Neighbors/"><span class="tag">K-Nearest Neighbors</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Linear-Regression/"><span class="tag">Linear Regression</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/MAE/"><span class="tag">MAE</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/MAPE/"><span class="tag">MAPE</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/MSE/"><span class="tag">MSE</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Machine-Learning/"><span class="tag">Machine Learning</span><span class="tag">9</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Naive-Bayes/"><span class="tag">Naive Bayes</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Neural-Network/"><span class="tag">Neural Network</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Next/"><span class="tag">Next</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Polynomial-Regression/"><span class="tag">Polynomial Regression</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Seafile/"><span class="tag">Seafile</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Sorting-algorithm/"><span class="tag">Sorting algorithm</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Support-Vector-Machine/"><span class="tag">Support Vector Machine</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Ubuntu/"><span class="tag">Ubuntu</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/"><span class="tag">服务器</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/blog/">Laugh</a><p class="is-size-7"><span>&copy; 2020 Laugh</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" async></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/blog/js/column.js"></script><script src="/blog/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/blog/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/blog/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/blog/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/blog/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
