@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="theme-color" content="#123456"><meta name="generator" content="Hexo 4.2.0"><title>机器学习|装袋和提升方法详解 - Laugh&#039;s blog</title><link rel="manifest" href="/blog/manifest.json"><meta name="application-name" content="Laugh&#039;s blog"><meta name="msapplication-TileImage" content="/img/favicon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Laugh&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta description="前面的文章都是独立的讲解每一个分类器的分类过程，每一个分类器都有其独有的特点并非常适合某些数据。但在实际中，可能没有那样合适的数据，在应用前面的分类器时，可能会出现分类准确率低的问题。为解决这样的问题，集成学习便被提出，利用多个弱分类器结合的方式使得分类准确率提高。本次详细讲解了集成学习中十分经典的几个算法：装袋（Bagging）中的 Bagging tree 和随机森林（Ramdom Fores"><meta property="og:type" content="blog"><meta property="og:title" content="机器学习|装袋和提升方法详解"><meta property="og:url" content="http://www.laugh12321.cn/blog/2019/02/07/bagging_and_boosting/"><meta property="og:site_name" content="Laugh&#039;s blog"><meta property="og:description" content="前面的文章都是独立的讲解每一个分类器的分类过程，每一个分类器都有其独有的特点并非常适合某些数据。但在实际中，可能没有那样合适的数据，在应用前面的分类器时，可能会出现分类准确率低的问题。为解决这样的问题，集成学习便被提出，利用多个弱分类器结合的方式使得分类准确率提高。本次详细讲解了集成学习中十分经典的几个算法：装袋（Bagging）中的 Bagging tree 和随机森林（Ramdom Fores"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/09.jpg"><meta property="article:published_time" content="2019-02-07T00:00:00.000Z"><meta property="article:modified_time" content="2020-10-22T07:59:27.842Z"><meta property="article:author" content="Laugh"><meta property="article:tag" content="Machine Learning"><meta property="article:tag" content="Bagging"><meta property="article:tag" content="BoosTing"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/09.jpg"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.laugh12321.cn/blog"},"headline":"Laugh's blog","image":["https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/photo/09.jpg"],"datePublished":"2019-02-07T00:00:00.000Z","dateModified":"2020-10-22T07:59:27.842Z","author":{"@type":"Person","name":"laugh12321"},"description":"前面的文章都是独立的讲解每一个分类器的分类过程，每一个分类器都有其独有的特点并非常适合某些数据。但在实际中，可能没有那样合适的数据，在应用前面的分类器时，可能会出现分类准确率低的问题。为解决这样的问题，集成学习便被提出，利用多个弱分类器结合的方式使得分类准确率提高。本次详细讲解了集成学习中十分经典的几个算法：装袋（Bagging）中的 Bagging tree 和随机森林（Ramdom Fores"}</script><link rel="canonical" href="http://www.laugh12321.cn/blog/2019/02/07/bagging_and_boosting/"><link rel="icon" href="/blog/img/favicon.svg"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.12.0/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/blog/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><script src="https://www.googletagmanager.com/gtag/js?id=UA-180999768-1" async></script><script>window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+    
+        gtag('config', 'UA-180999768-1');</script><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css"><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><link rel="alternate" href="/blog/atom.xml" title="Laugh's blog" type="application/atom+xml">
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/blog/">Laugh</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/blog/">首页</a><a class="navbar-item" href="/blog/archives">归档</a><a class="navbar-item" href="/blog/categories">分类</a><a class="navbar-item" href="/blog/tags">标签</a><a class="navbar-item" href="/blog/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="GitHub" href="https://github.com/laugh12321"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/09.jpg" alt="机器学习|装袋和提升方法详解"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2019-02-07T00:00:00.000Z" title="2019-02-07T00:00:00.000Z">2019-02-07</time>发表</span><span class="level-item"><time dateTime="2020-10-22T07:59:27.842Z" title="2020-10-22T07:59:27.842Z">2020-10-22</time>更新</span><span class="level-item"><a class="link-muted" href="/blog/categories/Machine-Learning/">Machine Learning</a><span> / </span><a class="link-muted" href="/blog/categories/Machine-Learning/Bagging-and-BoosTing/">Bagging and BoosTing</a></span><span class="level-item">37 分钟读完 (大约5590个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">机器学习|装袋和提升方法详解</h1><div class="content"><p>前面的文章都是独立的讲解每一个分类器的分类过程，每一个分类器都有其独有的特点并非常适合某些数据。但在实际中，可能没有那样合适的数据，在应用前面的分类器时，可能会出现分类准确率低的问题。为解决这样的问题，集成学习便被提出，利用多个弱分类器结合的方式使得分类准确率提高。本次详细讲解了集成学习中十分经典的几个算法：装袋（Bagging）中的 Bagging tree 和随机森林（Ramdom Forest）以及 提升（Boosting）中的 Adaboost 和梯度提升树（GBDT）。</p>
+<a id="more"></a>
+
+<h2 id="集成学习"><a href="#集成学习" class="headerlink" title="集成学习"></a>集成学习</h2><h3 id="集成学习概念"><a href="#集成学习概念" class="headerlink" title="集成学习概念"></a>集成学习概念</h3><p>在学习装袋和提升算法之前，先引入一个概念：集成学习。集成学习，顾名思义就是通过构建多个分类器并结合使用来完成学习任务，同时也被称为多分类器系统。其最大的特点就是结合各个弱分类器的长处，从而达到“三个臭皮匠顶个诸葛亮”的效果。</p>
+<p>每一个弱分类器我们将其称作「个体学习器」，集成学习的基本结构就是生成一组个体学习器，再用某种策略将他们结合起来。</p>
+<p>从个体学习器类别来看，集成学习通常分为两种类型：</p>
+<ul>
+<li>「同质」集成，在一个集成学习中，「个体学习器」是同一类型，如 「决策树集成」 所有个体学习器都为决策树，「神经网络集成」所有的个体学习器都为神经网络。</li>
+<li>「异质」集成，在一个集成学习中，「个体学习器」为不同类型，如一个集成学习中可以包含决策树模型也可以包含神经网络模型。</li>
+</ul>
+<p>同样从集成方式来看，集成学习也可以分为两类：</p>
+<ul>
+<li>并行式，当个体学习器之间不存在强依赖关系时，可同时生成并行化方法，其中代表算法为装袋（Bagging）算法。</li>
+<li>串行式，当个体学习器之间存在强依赖关系时，必须串行生成序列化方法，其中代表算法为提升（Boosting）算法。</li>
+</ul>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/1.png">
+</center>
+
+<h3 id="结合策略"><a href="#结合策略" class="headerlink" title="结合策略"></a>结合策略</h3><p>集成学习中，当数据被多个个体学习器学习后，如何最终决定学习结果呢？假定集成包含 T$T$ 个个体学习器 {h1,h2,…,hT}${h1,h2,…,hT}$ 。常用的有三种方法：平均法，投票法，学习法。</p>
+<h4 id="平均法"><a href="#平均法" class="headerlink" title="平均法"></a><a href="#%E5%B9%B3%E5%9D%87%E6%B3%95" title="平均法"></a>平均法</h4><p>在数值型输出中，最常用的结合策略为平均法（Averaging），在平均法中有两种方式：</p>
+<p><strong>简单平均法：</strong></p>
+<p>H(x)=1TT∑i=1hi(x)(1)</p>
+<p>$$(1)H(x)=1T∑i=1Thi(x)$$</p>
+<p>取每一个「个体学习器」学习后的平均值。</p>
+<p><strong>加权平均法：</strong></p>
+<p>H(x)=T∑i=1wihi(x)(2)</p>
+<p>$$(2)H(x)=∑i=1Twihi(x)$$</p>
+<p>其中 wi$wi$ 是每一个「个体学习器」 hi$hi$ 的权重，通常为 wi≥0,∑Ti=1wi=1$wi≥0,∑i=1Twi=1$。</p>
+<h4 id="投票法"><a href="#投票法" class="headerlink" title="投票法"></a><a href="#%E6%8A%95%E7%A5%A8%E6%B3%95" title="投票法"></a>投票法</h4><p>对于分类输出而言，平均法显然效果不太好，最常用的结合策略为投票法(Voting)，在投票法中主要有三种方式：</p>
+<p><strong>绝对多数投票法：</strong></p>
+<p>H(X)={cj,if∑Ti=1hji&gt;0.5∑Nk=1∑Ti=1hki(x);None,if∑Ti=1hji&lt;=0.5∑Nk=1∑Ti=1hki(x);(3)</p>
+<p>$$(3)H(X)={cj,if∑i=1Thij&gt;0.5∑k=1N∑i=1Thik(x);None,if∑i=1Thij&lt;=0.5∑k=1N∑i=1Thik(x);$$</p>
+<p>简单而言，当某一个输出的分类超过了半数则输出该分类，若未超过半数则不输出分类。</p>
+<p><strong>相对多数投票法：</strong></p>
+<p>H(X)=cargmaxj∑Ti=1hji(x)(4)</p>
+<p>$$(4)H(X)=cargmaxj∑i=1Thij(x)$$</p>
+<p>即在「个体学习器」分类完成后，通过投票选出分类最多的标签作为此次分类的结果。</p>
+<p><strong>加权投票法：</strong></p>
+<p>H(X)=cargmaxj∑Ti=1wihji(x)(5)</p>
+<p>$$(5)H(X)=cargmaxj∑i=1Twihij(x)$$</p>
+<p>同加权平均法类似，wi$wi$ 是每一个「个体学习器」 hi$hi$ 的权重，通常为 wi≥0,∑Ti=1wi=1$wi≥0,∑i=1Twi=1$。</p>
+<h4 id="学习法"><a href="#学习法" class="headerlink" title="学习法"></a><a href="#%E5%AD%A6%E4%B9%A0%E6%B3%95" title="学习法"></a>学习法</h4><p>以上两种方法（平均法和投票法）相对比较简单，但是可能学习误差较大，为了解决这种情况，还有一种方法为学习法，其代表方法是 <code>stacking</code> ，当使用<code>stacking</code> 的结合策略时， 不是对弱学习器的结果做简单的逻辑处理，而是再加上一层学习器，即把训练集弱学习器的学习结果作为输入，把训练集的输出作为输出，重新训练一个学习器来得到最终结果。</p>
+<p>在这种情况下，我们将弱学习器称为初级学习器，将用于结合的学习器称为次级学习器。对于测试集，首先用初级学习器预测一次，得到次级学习器的输入样本，再用次级学习器预测一次，得到最终的预测结果。</p>
+<h2 id="装袋算法-Bagging"><a href="#装袋算法-Bagging" class="headerlink" title="装袋算法 Bagging"></a><a href="#%E8%A3%85%E8%A2%8B%E7%AE%97%E6%B3%95-Bagging" title="装袋算法 Bagging"></a>装袋算法 Bagging</h2><p>在大致了解集成学习相关概念之后，接下来就是对集成学习中常用算法思想之一的装袋算法进行详细的讲解。</p>
+<h3 id="装袋算法原理"><a href="#装袋算法原理" class="headerlink" title="装袋算法原理"></a><a href="#%E8%A3%85%E8%A2%8B%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86" title="装袋算法原理"></a>装袋算法原理</h3><p>装袋算法是并行式集成学习的代表，其原理也比较简单。算法步骤如下：</p>
+<ol>
+<li>数据处理：将数据根据实际情况进行清洗整理。</li>
+<li>随机采样：重复 T 次，每一次从样本中随机选出 T 个子样本。</li>
+<li>个体训练：将每一个子样本放入个体学习器训练。</li>
+<li>分类决策：用投票法集成进行分类决策。</li>
+</ol>
+<h3 id="Bagging-tree"><a href="#Bagging-tree" class="headerlink" title="Bagging tree"></a><a href="#Bagging-tree" title="Bagging tree"></a>Bagging tree</h3><p>在前一节的决策树讲解中提到，决策树是一个十分「完美」的训练器，但特别容易出现过拟合的情况，最终导致预测准确率低的问题。事实上在装袋算法中，决策树常常被用作弱分类器。下面我们通过具体实验来看看决策树和以决策树作为装袋算法的预测效果。</p>
+<h4 id="数据加载"><a href="#数据加载" class="headerlink" title="数据加载"></a><a href="#%E6%95%B0%E6%8D%AE%E5%8A%A0%E8%BD%BD" title="数据加载"></a>数据加载</h4><p>本实验我们使用在上一章讲决策树时所用的学生成绩预测数据集。其中数据处理已在上一章详细说明，本次实验我们使用处理过后的数据集。数据集名称为 <code>course-14-student.csv</code>.</p>
+<p>数据集下载 👉 <a target="_blank" rel="noopener" href="http://labfile.oss.aliyuncs.com/courses/1081/course-14-student.csv">传送门</a></p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import pandas as pd  </span><br><span class="line">  </span><br><span class="line">stu\_data &#x3D; pd.read\_csv(&quot;course-14-student.csv&quot;)  </span><br><span class="line">stu\_data.head(10)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/output_00.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/output_00.png"></a></p>
+<h4 id="数据划分"><a href="#数据划分" class="headerlink" title="数据划分"></a><a href="#%E6%95%B0%E6%8D%AE%E5%88%92%E5%88%86" title="数据划分"></a>数据划分</h4><p>加载好预处理的数据集之后，为了应用装袋算法，我们需要将数据集分为 <strong>训练集</strong>和<strong>测试集</strong>，依照经验：<strong>训练集</strong>占比为 70%，<strong>测试集</strong>占 30%。</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">from sklearn.model\_selection import train\_test\_split  </span><br><span class="line">  </span><br><span class="line">x\_train, x\_test, y\_train, y\_test &#x3D; train\_test\_split(stu\_data.iloc\[:,:-1\], stu\_data\[&quot;G3&quot;\],  </span><br><span class="line">                                                    test\_size&#x3D;0.3, random\_state&#x3D;35)  </span><br><span class="line">x\_test.head(10)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/output_01.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/output_01.png"></a></p>
+<h4 id="决策树预测"><a href="#决策树预测" class="headerlink" title="决策树预测"></a><a href="#%E5%86%B3%E7%AD%96%E6%A0%91%E9%A2%84%E6%B5%8B" title="决策树预测"></a>决策树预测</h4><p>作为比较，首先我们将该数据集用决策树的方式进行预测,使用 <code>scikit-learn</code> 实现决策树预测的用法在前一章节已详细介绍，本实验直接使用。</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from sklearn.tree import DecisionTreeClassifier  </span><br><span class="line">  </span><br><span class="line">dt\_model &#x3D; DecisionTreeClassifier(criterion&#x3D;&#39;entropy&#39;, random\_state&#x3D;34)  </span><br><span class="line">dt\_model.fit(x\_train, y\_train)  # 使用训练集训练模型  </span><br><span class="line">dt\_y\_predict &#x3D; dt\_model.predict(x\_test)  </span><br><span class="line">dt\_y\_predict  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">array([2, 0, 3, 2, 1, 2, 2, 2, 3, 3, 0, 2, 1, 3, 3, 2, 3, 0, 1, 2, 1, 2,</span><br><span class="line">       1, 2, 3, 3, 3, 0, 3, 3, 3, 3, 2, 2, 3, 3, 0, 1, 2, 2, 2, 1, 3, 2,</span><br><span class="line">       1, 3, 2, 3, 3, 3, 3, 1, 1, 3, 2, 0, 1, 3, 2, 3, 3, 0, 0, 2, 2, 3,</span><br><span class="line">       3, 3, 2, 1, 0, 3, 2, 2, 3, 2, 1, 3, 0, 2, 3, 1, 3, 3, 0, 3, 3, 1,</span><br><span class="line">       3, 3, 1, 3, 3, 3, 2, 0, 2, 3, 0, 3, 1, 3, 1, 1, 3, 3, 3, 3, 3, 3,</span><br><span class="line">       2, 1, 1, 1, 3, 0, 3, 3, 3], dtype&#x3D;int64) </span><br></pre></td></tr></table></figure>
+
+<p>计算使用决策树预测的准确率。</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line">7  </span><br><span class="line">8  </span><br><span class="line">9  </span><br><span class="line">10  </span><br><span class="line">11  </span><br><span class="line">12  </span><br><span class="line">13  </span><br><span class="line">14  </span><br><span class="line">15  </span><br><span class="line">16  </span><br><span class="line">17  </span><br><span class="line">18  </span><br><span class="line">19  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">import numpy as np  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">def get\_accuracy(test\_labels, pred\_labels):  </span><br><span class="line">    &quot;&quot;&quot;  </span><br><span class="line">    参数:  </span><br><span class="line">    test\_labels -- 测试集的真实值  </span><br><span class="line">    pred\_labels -- 测试集的预测值  </span><br><span class="line">  </span><br><span class="line">    返回:  </span><br><span class="line">    accur -- 准确率  </span><br><span class="line">    &quot;&quot;&quot;  </span><br><span class="line">    correct &#x3D; np.sum(test\_labels &#x3D;&#x3D; pred\_labels)  # 计算预测正确的数据个数  </span><br><span class="line">    n &#x3D; len(test\_labels)  # 总测试集数据个数  </span><br><span class="line">    accur &#x3D; correct&#x2F;n  </span><br><span class="line">    return accur  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">get\_accuracy(y\_test, dt\_y\_predict)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0.7899159663865546 </span><br></pre></td></tr></table></figure>
+
+<p>由于本次实验所采用的数据集特征值比前一章节多，所以决策树泛化能力更差。</p>
+<h4 id="Bagging-Tree-数据模型构建"><a href="#Bagging-Tree-数据模型构建" class="headerlink" title="Bagging Tree 数据模型构建"></a><a href="#Bagging-Tree-%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E6%9E%84%E5%BB%BA" title="Bagging Tree 数据模型构建"></a>Bagging Tree 数据模型构建</h4><p>单棵决策树的预测结果并不能使我们满意，下面我们使用 <strong>装袋（Bagging）</strong> 的思想来提高预测准确率。我们通过 <code>scikit-learn</code> 来对 Bagging Tree 算法进行实现。</p>
+<p>在 <code>scikit-learn</code> 中 Bagging tree 常用参数如下：</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">BaggingClassifier(base\_estimator&#x3D;None, n\_estimators&#x3D;10, max\_samples&#x3D;1.0, max\_features&#x3D;1.0)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<p>其中：</p>
+<ul>
+<li><code>base_estimator</code>：表示基础分类器（弱分类器）种类，默认为决策树 。</li>
+<li><code>n_estimators</code>：表示建立树的个数，默认值为 10 。</li>
+<li><code>max_samples</code>：表示从抽取数据中选取训练样本的数量，int（整型）表示数量，float（浮点型）表示比例，默认为所有样本。</li>
+<li><code>max_features</code>：表示抽取特征的数量，int（整型）表示数量，float（浮点型）表示比例，默认为所有特征。</li>
+</ul>
+<p>常用方法:</p>
+<ul>
+<li><code>fit(x,y)</code>：训练。</li>
+<li><code>predict(X)</code>：对数据集进行预测返回预测结果。</li>
+</ul>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line">7  </span><br><span class="line">8  </span><br><span class="line">9  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">from sklearn.ensemble import BaggingClassifier  </span><br><span class="line">  </span><br><span class="line">tree &#x3D; DecisionTreeClassifier(criterion&#x3D;&#39;entropy&#39;, random\_state&#x3D;28)  </span><br><span class="line">bag &#x3D; BaggingClassifier(tree, n\_estimators&#x3D;100,  </span><br><span class="line">                        max\_samples&#x3D;1.0, random\_state&#x3D;3)  # 使用决策树  </span><br><span class="line">  </span><br><span class="line">bag.fit(x\_train, y\_train)  </span><br><span class="line">bt\_y\_predict &#x3D; bag.predict(x\_test)  </span><br><span class="line">bt\_y\_predict  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">array([3, 0, 3, 2, 1, 2, 3, 2, 3, 3, 3, 2, 1, 3, 3, 2, 2, 0, 1, 2, 1, 2,</span><br><span class="line">       1, 3, 3, 2, 3, 0, 2, 3, 3, 3, 2, 2, 3, 3, 0, 1, 2, 0, 2, 1, 3, 3,</span><br><span class="line">       1, 3, 2, 3, 3, 3, 3, 3, 1, 2, 2, 0, 1, 3, 2, 3, 3, 2, 0, 2, 2, 3,</span><br><span class="line">       2, 3, 2, 3, 0, 3, 2, 2, 3, 2, 1, 2, 0, 2, 3, 1, 3, 3, 0, 3, 3, 1,</span><br><span class="line">       3, 3, 1, 3, 3, 3, 2, 0, 2, 3, 0, 3, 1, 3, 1, 1, 3, 3, 3, 3, 3, 3,</span><br><span class="line">       3, 1, 1, 1, 3, 0, 3, 3, 3], dtype&#x3D;int64) </span><br></pre></td></tr></table></figure>
+
+<h4 id="准确率计算"><a href="#准确率计算" class="headerlink" title="准确率计算"></a><a href="#%E5%87%86%E7%A1%AE%E7%8E%87%E8%AE%A1%E7%AE%97" title="准确率计算"></a>准确率计算</h4><p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">get\_accuracy(y\_test,bt\_y\_predict)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0.8991596638655462 </span><br></pre></td></tr></table></figure>
+
+<p>根据准确率可以看到在决策树通过装袋（Bagging）算法后预测准确率有明显提升。</p>
+<h3 id="随机森林-Random-Forest"><a href="#随机森林-Random-Forest" class="headerlink" title="随机森林 Random Forest"></a><a href="#%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97-Random-Forest" title="随机森林 Random Forest"></a>随机森林 Random Forest</h3><p>其实，Bagging tree 算法，是应用子数据集中的所有特征构建一棵完整的树，最终通过投票的方式进行预测。而随机森林就是在 Bagging tree 算法的基础上进行进一步的改进。</p>
+<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/2.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/2.png"></a></p>
+<p>随机森林的思想就是将一个大的数据集使用<strong>自助采样法</strong>进行处理，即从原样本数据集中随机抽取多个子样本集，并基于每一个子样本集生成相应的决策树。这样，就可以构建出由许多小决策树组形成的决策树「森林」。最后，实验通过<strong>投票法</strong>选择决策树最多的预测结果作为最终的输出。</p>
+<p>所以，随机森林的名称来源就是「随机抽样 + 决策树森林」。</p>
+<h4 id="随机森林算法原理"><a href="#随机森林算法原理" class="headerlink" title="随机森林算法原理"></a><a href="#%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86" title="随机森林算法原理"></a>随机森林算法原理</h4><p>随机森林作为装袋（Bagging）的代表算法，算法原理和装袋十分相似，但在此基础上做了一些改进：</p>
+<ol>
+<li><p>对于普通的决策树，会在 N 个样本的所有特征中选择一个最优划分特征，但是随机森林首先会从所有特征中随机选择部分特征，再从该部分特征中选择一个最优划分特征。这样进一步增强了模型的泛化能力。</p>
+</li>
+<li><p>在决定部分特征个数时，通过交叉验证的方式来获取一个合适的值。</p>
+</li>
+</ol>
+<p>随机森林算法流程：</p>
+<ol>
+<li>从样本集中有放回随机采样选出 <code>n</code> 个样本；</li>
+<li>从所有特征中随机选择 <code>k</code> 个特征，对选出的样本利用这些特征建立决策树；</li>
+<li>重复以上两步 <code>m</code> 次，即生成 <code>m</code> 棵决策树，形成随机森林；</li>
+<li>对于新数据，经过每棵树决策，最后投票确认分到哪一类。</li>
+</ol>
+<h4 id="模型构建和数据预测"><a href="#模型构建和数据预测" class="headerlink" title="模型构建和数据预测"></a><a href="#%E6%A8%A1%E5%9E%8B%E6%9E%84%E5%BB%BA%E5%92%8C%E6%95%B0%E6%8D%AE%E9%A2%84%E6%B5%8B" title="模型构建和数据预测"></a>模型构建和数据预测</h4><p>在划分好数据集之后，接下来就是进行模型的构建以及预测。下面我们通过 <code>scikit-learn</code> 来对其进行实现。</p>
+<p>在 <code>scikit-learn</code> 随机森林常用参数如下：</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RandomForestClassifier(n\_estimators,criterion,max\_features,random\_state&#x3D;None)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<p>其中：</p>
+<ul>
+<li><code>n_estimators</code>：表示建立树的个数，默认值为 10 。</li>
+<li><code>criterion</code>：表示特征划分方法选择，默认为 <code>gini</code>，可选择为 <code>entropy</code> (信息增益)。</li>
+<li><code>max_features</code>：表示随机选择特征个数，默认为特征数的根号。</li>
+</ul>
+<p>常用方法:</p>
+<ul>
+<li><code>fit(x,y)</code>：训练随机森林。</li>
+<li><code>predict(X)</code>：对数据集进行预测返回预测结果。</li>
+</ul>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line">7  </span><br><span class="line">8  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">from sklearn.ensemble import RandomForestClassifier  </span><br><span class="line">  </span><br><span class="line">\# 这里构建 100 棵决策树，采用信息熵来寻找最优划分特征。  </span><br><span class="line">rf &#x3D; RandomForestClassifier(  </span><br><span class="line">    n\_estimators&#x3D;100, max\_features&#x3D;None, criterion&#x3D;&#39;entropy&#39;)  </span><br><span class="line">rf.fit(x\_train, y\_train)  # 进行模型的训练  </span><br><span class="line">rf\_y\_predict &#x3D; rf.predict(x\_test)  </span><br><span class="line">rf\_y\_predict  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">array([3, 0, 3, 2, 1, 2, 3, 2, 3, 3, 3, 2, 1, 3, 3, 2, 2, 0, 1, 2, 1, 2,</span><br><span class="line">       1, 3, 3, 2, 3, 0, 2, 3, 3, 3, 2, 2, 3, 3, 0, 1, 2, 2, 2, 1, 3, 3,</span><br><span class="line">       1, 3, 2, 3, 3, 3, 3, 3, 1, 2, 2, 2, 1, 3, 2, 3, 3, 2, 0, 2, 2, 3,</span><br><span class="line">       2, 3, 2, 3, 0, 3, 2, 2, 3, 2, 1, 2, 0, 2, 2, 1, 3, 3, 0, 3, 3, 1,</span><br><span class="line">       3, 3, 1, 3, 3, 3, 2, 0, 2, 3, 0, 3, 1, 3, 1, 1, 3, 3, 3, 3, 3, 3,</span><br><span class="line">       3, 1, 1, 1, 3, 0, 3, 3, 3], dtype&#x3D;int64) </span><br></pre></td></tr></table></figure>
+
+<h4 id="准确率计算-1"><a href="#准确率计算-1" class="headerlink" title="准确率计算"></a><a href="#%E5%87%86%E7%A1%AE%E7%8E%87%E8%AE%A1%E7%AE%97-1" title="准确率计算"></a>准确率计算</h4><p>当我们训练好模型并进行分类预测之后，可以通过比对预测结果和真实结果得到预测的准确率。</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">get\_accuracy(y\_test, rf\_y\_predict)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0.8907563025210085 </span><br></pre></td></tr></table></figure>
+
+<p>可以通过结果看到，本次实验的数据集用随机森林预测的准确率和用 Bagging tree 预测的准确率差别不大，但随着数据集的增大和特征数的增多，随机森林的优势就会慢慢显现出来。</p>
+<h2 id="提升算法-Boosting"><a href="#提升算法-Boosting" class="headerlink" title="提升算法 Boosting"></a><a href="#%E6%8F%90%E5%8D%87%E7%AE%97%E6%B3%95-Boosting" title="提升算法 Boosting"></a>提升算法 Boosting</h2><p>当「个体学习器」之间存在较强的依赖时，采用装袋的算法便有些不合适，此时最好的方法就是使用串行集成方式：提升（Boosting）。</p>
+<h3 id="提升算法原理"><a href="#提升算法原理" class="headerlink" title="提升算法原理"></a><a href="#%E6%8F%90%E5%8D%87%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86" title="提升算法原理"></a>提升算法原理</h3><p>提升算法是可以将弱学习器提升为强学习器的算法，其具体思想是从初始训练集训练出一个「个体学习器」，再根据个体学习器的表现对训练样本分布进行调整，使得在个体学习器中判断错的训练样本在后续受到更多的关注，然后基于调整后的样本分布来训练下一个「个体学习器」。如此重复进行，直至个体学习器数目达到事先指定的值 <code>T</code>，最终将这 <code>T</code> 个「个体学习器」输出的值进行加权结合得到最终的输出值。</p>
+<h3 id="Adaboost"><a href="#Adaboost" class="headerlink" title="Adaboost"></a><a href="#Adaboost" title="Adaboost"></a>Adaboost</h3><p>提升（Boosting）算法中最具代表性的算法为 Adaboost。</p>
+<p>AdaBoost（Adaptive Boosting）名为自适应增强，其主要自适应增强表现在：上一个「个体学习器」中被错误分类的样本的权值会增大，正确分类的样本的权值会减小，并再次用来训练下一个基本分类器。在每一轮迭代中，加入一个新的弱分类器，直到达到某个预定的足够小的错误率或达到预先指定的最大迭代次数才确定最终的强分类器。</p>
+<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/3.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Bagging-and-Boosting/3.png"></a></p>
+<h4 id="AdaBoost-原理"><a href="#AdaBoost-原理" class="headerlink" title="AdaBoost 原理"></a><a href="#AdaBoost-%E5%8E%9F%E7%90%86" title="AdaBoost 原理"></a>AdaBoost 原理</h4><p>AdaBoost 算法与 Boosting 算法不同的是，其不需要预先知道弱分类器的误差，并且最后得到的强分类器的分类精度依赖于所有弱分类器的分类精度。</p>
+<p>Adaboost 算法流程：</p>
+<ol>
+<li>数据准备：通过数据清理和数据整理的方式得到符合规范的数据。</li>
+<li>初始化权重：如果有 <code>N</code> 个训练样本数据，在最开始时每一个数据被赋予相同的权值：<code>1/N</code>。</li>
+<li>弱分类器预测：将有权重的训练样本放入弱分类器进行分类预测。</li>
+<li>更改权重：如果某个样本点被准确地分类，降低其权值；若被分类错误，那么提高其权值。然后，权值更新过的样本集被用于训练下一个分类器。</li>
+<li>强分类器组合：重复 <code>3，4</code> 步骤，直至训练结束，加大分类误差率小的弱分类器的权重（这里的权重和样本权重不一样），使其在最终的分类函数中起着较大的决定作用，降低分类误差率大的弱分类器的权重，使其在最终的分类函数中起着较小的决定作用，最终输出结果。</li>
+</ol>
+<h4 id="模型构建和数据预测-1"><a href="#模型构建和数据预测-1" class="headerlink" title="模型构建和数据预测"></a><a href="#%E6%A8%A1%E5%9E%8B%E6%9E%84%E5%BB%BA%E5%92%8C%E6%95%B0%E6%8D%AE%E9%A2%84%E6%B5%8B-1" title="模型构建和数据预测"></a>模型构建和数据预测</h4><p>在划分好数据集之后，接下来就是进行模型的构建以及预测。下面我们通过 <code>scikit-learn</code> 来对其进行实现。</p>
+<p>在 <code>scikit-learn</code> Adaboost 常用参数如下：</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AdaBoostClassifier(base\_estimators,n\_estimators)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<p>其中：</p>
+<ul>
+<li><code>base_estimators</code>：表示弱分类器种类，默认为 CART 分类树。</li>
+<li><code>n_estimators</code>：表示弱学习器的最大个数，默认值为 <code>50</code>。</li>
+</ul>
+<p>常用方法:</p>
+<ul>
+<li><code>fit(x,y)</code>：训练弱分类器。</li>
+<li><code>predict(X)</code>：对数据集进行预测返回预测结果。</li>
+</ul>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from sklearn.ensemble import AdaBoostClassifier  </span><br><span class="line">  </span><br><span class="line">ad &#x3D; AdaBoostClassifier(n\_estimators&#x3D;100)  </span><br><span class="line">ad.fit(x\_train, y\_train)  </span><br><span class="line">ad\_y\_predict &#x3D; ad.predict(x\_test)  </span><br><span class="line">ad\_y\_predict  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">array([3, 3, 3, 2, 0, 3, 3, 2, 3, 3, 3, 2, 1, 3, 3, 2, 2, 0, 1, 2, 1, 3,</span><br><span class="line">       1, 3, 3, 3, 3, 0, 2, 3, 3, 3, 2, 2, 3, 3, 0, 1, 2, 2, 3, 1, 3, 3,</span><br><span class="line">       1, 3, 2, 3, 2, 3, 3, 3, 1, 2, 3, 3, 1, 3, 2, 2, 3, 2, 0, 2, 2, 3,</span><br><span class="line">       2, 3, 3, 3, 0, 3, 2, 2, 3, 2, 1, 2, 0, 2, 2, 1, 3, 3, 3, 3, 3, 1,</span><br><span class="line">       3, 3, 1, 3, 3, 1, 2, 0, 2, 3, 0, 3, 1, 3, 1, 0, 3, 3, 3, 3, 2, 3,</span><br><span class="line">       3, 1, 3, 1, 3, 3, 3, 1, 3], dtype&#x3D;int64) </span><br></pre></td></tr></table></figure>
+
+<h4 id="准确率计算-2"><a href="#准确率计算-2" class="headerlink" title="准确率计算"></a><a href="#%E5%87%86%E7%A1%AE%E7%8E%87%E8%AE%A1%E7%AE%97-2" title="准确率计算"></a>准确率计算</h4><p>当我们训练好模型并进行分类预测之后，可以通过比对预测结果和真实结果得到预测的准确率。</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">get\_accuracy(y\_test, ad\_y\_predict)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0.7983193277310925 </span><br></pre></td></tr></table></figure>
+
+<p>通过结果可以看到，应用 Adaboost 算法得到的准确率和决策树相差不大，说明在使用 Adaboost 算法时预测效果不好。</p>
+<h3 id="梯度提升树-GBDT"><a href="#梯度提升树-GBDT" class="headerlink" title="梯度提升树 GBDT"></a><a href="#%E6%A2%AF%E5%BA%A6%E6%8F%90%E5%8D%87%E6%A0%91-GBDT" title="梯度提升树 GBDT"></a>梯度提升树 GBDT</h3><p>梯度提升树（Gradient Boosting Decison Tree，GBDT）同样是 Boosting 算法家族中的一员， Adaboost 是利用前一轮迭代弱学习器的误差率来更新训练集的权重，而梯度提升树所采用的是前向分布算法，且弱学习器限定了只能使用CART树模型。</p>
+<h4 id="梯度提升树算法原理"><a href="#梯度提升树算法原理" class="headerlink" title="梯度提升树算法原理"></a><a href="#%E6%A2%AF%E5%BA%A6%E6%8F%90%E5%8D%87%E6%A0%91%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86" title="梯度提升树算法原理"></a>梯度提升树算法原理</h4><p>在 GBDT 的迭代中，假设我们前一轮迭代得到的强学习器是 ft−1(x)$ft−1(x)$, 损失函数是 L(y,ft−1(x))$L(y,ft−1(x))$, 我们本轮迭代的目标是找到一个 CART 回归树模型的弱学习器 ht(x)$ht(x)$，让本轮的损失 L(y,ft(x)=L(y,ft−1(x)+ht(x))$L(y,ft(x)=L(y,ft−1(x)+ht(x))$ 最小。也就是说，本轮迭代找到决策树，要让样本的损失尽量变得更小。</p>
+<p>算法流程：</p>
+<ol>
+<li>数据准备：通过数据清理和数据整理的方式得到符合规范的数据。</li>
+<li>初始化权重：如果有 <code>N</code> 个训练样本数据，在最开始时每一个数据被赋予相同的权值：<code>1/N</code>。</li>
+<li>弱分类器预测：将有权重的训练样本放入弱分类器进行分类预测。</li>
+<li>CART 树拟合：计算每一个子样本的梯度值，通过梯度值和子样本拟合一棵 CART 树</li>
+<li>更新强学习器：在拟合好的 CART树中通过损失函数计算出最佳的拟合值，更新先前组成的强学习器。</li>
+<li>强分类器组合：重复 <code>3，4，5</code> 步骤，直至训练结束，得到一个强分类器，最终输出结果。</li>
+</ol>
+<h4 id="梯度提升树模型构建及预测"><a href="#梯度提升树模型构建及预测" class="headerlink" title="梯度提升树模型构建及预测"></a><a href="#%E6%A2%AF%E5%BA%A6%E6%8F%90%E5%8D%87%E6%A0%91%E6%A8%A1%E5%9E%8B%E6%9E%84%E5%BB%BA%E5%8F%8A%E9%A2%84%E6%B5%8B" title="梯度提升树模型构建及预测"></a>梯度提升树模型构建及预测</h4><p>在划分好数据集之后，接下来就是进行模型的构建以及预测。下面我们通过 <code>scikit-learn</code> 来对其进行实现。</p>
+<p>在 <code>scikit-learn</code> GBDT 常用参数如下：</p>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GradientBoostingClassifier(max\_depth &#x3D; 3，learning\_rate &#x3D; 0.1, n\_estimators &#x3D; 100，random\_state &#x3D; None)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<p>其中：</p>
+<ul>
+<li><code>max_depth</code>:表示生成 CART 树的最大深度，默认为 3</li>
+<li><code>learning_rate</code>:表示学习效率，默认为 0.1。</li>
+<li><code>n_estimators</code>：表示弱学习器的最大个数，默认值为 100。</li>
+<li><code>random_state</code>:表示随机数种子。</li>
+</ul>
+<p>常用方法:</p>
+<ul>
+<li><code>fit(x,y)</code>：训练弱分类器。</li>
+<li><code>predict(X)</code>：对数据集进行预测返回预测结果。</li>
+</ul>
+<p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line">7  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">from sklearn.ensemble import GradientBoostingClassifier  </span><br><span class="line">  </span><br><span class="line">clf &#x3D; GradientBoostingClassifier(  </span><br><span class="line">    n\_estimators&#x3D;100, learning\_rate&#x3D;1.0, random\_state&#x3D;33)  </span><br><span class="line">clf.fit(x\_train, y\_train)  </span><br><span class="line">gt\_y\_predict &#x3D; clf.predict(x\_test)  </span><br><span class="line">gt\_y\_predict  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">array([3, 0, 3, 2, 1, 3, 3, 2, 3, 3, 3, 2, 1, 3, 3, 2, 2, 0, 1, 2, 1, 2,</span><br><span class="line">       1, 3, 3, 2, 3, 0, 2, 3, 3, 3, 2, 2, 3, 3, 0, 1, 2, 2, 2, 1, 3, 3,</span><br><span class="line">       1, 3, 2, 3, 3, 3, 3, 3, 1, 2, 3, 2, 1, 3, 2, 3, 3, 2, 0, 2, 2, 3,</span><br><span class="line">       2, 3, 2, 3, 0, 3, 2, 2, 3, 2, 1, 2, 0, 2, 2, 1, 3, 3, 0, 3, 3, 1,</span><br><span class="line">       3, 3, 1, 3, 3, 3, 2, 0, 0, 3, 0, 3, 1, 3, 1, 1, 3, 3, 3, 3, 3, 3,</span><br><span class="line">       3, 1, 1, 1, 3, 2, 3, 3, 3], dtype&#x3D;int64) </span><br></pre></td></tr></table></figure>
+
+<h4 id="准确率计算-3"><a href="#准确率计算-3" class="headerlink" title="准确率计算"></a><a href="#%E5%87%86%E7%A1%AE%E7%8E%87%E8%AE%A1%E7%AE%97-3" title="准确率计算"></a>准确率计算</h4><p>| </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> | </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">get\_accuracy(y\_test, gt\_y\_predict)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> |</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0.8739495798319328 </span><br></pre></td></tr></table></figure>
+
+<p>可以看到，在使用装袋和提升算法时，在大部分情况下，会产生更好的预测结果，但有时也可能出现没有优化的情况。事实上，机器学习分类器的选择就是如此，没有最好的分类器只有最适合的分类器，不同的数据集，由于其数据特点的不同，在不同的分类器中表现也不同。</p>
+<p><strong>拓展阅读：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/zh-hans/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97">随机森林 - 维基百科</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bootstrap_aggregating">Bootstrap aggregating - 维基百科</a></li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>机器学习|装袋和提升方法详解</p><p><a href="http://www.laugh12321.cn/blog/2019/02/07/bagging_and_boosting/">http://www.laugh12321.cn/blog/2019/02/07/bagging_and_boosting/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Laugh</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2019-02-07</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2020-10-22</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icon" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/blog/tags/Machine-Learning/">Machine Learning</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/Bagging/">Bagging</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/BoosTing/">BoosTing</a></div><div class="sharethis-inline-share-buttons"></div><script src="https://platform-api.sharethis.com/js/sharethis.js#property=5f902f1aa809f500123872bf&amp;product=inline-share-buttons" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/alipay-reward-image.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/wechat-reward-image.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/blog/2019/02/09/cluster_of_k-means/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">机器学习|划分聚类之 K-Means 详解</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/blog/2019/02/01/decision_tree/"><span class="level-item">机器学习|决策树详解</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.css"><script src="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.min.js"></script><script>var gitalk = new Gitalk({
+            id: "422e67ee9f24b415e650d85c25065a34",
+            repo: "blog",
+            owner: "laugh12321",
+            clientID: "f831b7db637971edc8c9",
+            clientSecret: "9767a6cb27b89b67e2875e8915671499b75a6436",
+            admin: ["laugh12321"],
+            createIssueManually: true,
+            distractionFreeMode: false,
+            perPage: 20,
+            pagerDirection: "last",
+            
+            
+            enableHotKey: true,
+            language: "zh-CN",
+        })
+        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1 is-sticky"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="https://avatars0.githubusercontent.com/u/38065710?s=400&amp;u=80ee4d360562451484188e6f1677fa442720891b&amp;v=4" alt="Laugh"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Laugh</p><p class="is-size-6 is-block">The life I want, there is no shortcut.</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Northern Hemisphere</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/blog/archives"><p class="title">19</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/blog/categories"><p class="title">19</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/blog/tags"><p class="title">26</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/laugh12321" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/laugh12321"><i class="fab fa-github"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Facebook" href="https://facebook.com"><i class="fab fa-facebook"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Twitter" href="https://twitter.com"><i class="fab fa-twitter"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Dribbble" href="https://dribbble.com"><i class="fab fa-dribbble"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="RSS" href="/blog/"><i class="fas fa-rss"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#集成学习"><span class="level-left"><span class="level-item">1</span><span class="level-item">集成学习</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#集成学习概念"><span class="level-left"><span class="level-item">1.1</span><span class="level-item">集成学习概念</span></span></a></li><li><a class="level is-mobile" href="#结合策略"><span class="level-left"><span class="level-item">1.2</span><span class="level-item">结合策略</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#平均法"><span class="level-left"><span class="level-item">1.2.1</span><span class="level-item">平均法</span></span></a></li><li><a class="level is-mobile" href="#投票法"><span class="level-left"><span class="level-item">1.2.2</span><span class="level-item">投票法</span></span></a></li><li><a class="level is-mobile" href="#学习法"><span class="level-left"><span class="level-item">1.2.3</span><span class="level-item">学习法</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#装袋算法-Bagging"><span class="level-left"><span class="level-item">2</span><span class="level-item">装袋算法 Bagging</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#装袋算法原理"><span class="level-left"><span class="level-item">2.1</span><span class="level-item">装袋算法原理</span></span></a></li><li><a class="level is-mobile" href="#Bagging-tree"><span class="level-left"><span class="level-item">2.2</span><span class="level-item">Bagging tree</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#数据加载"><span class="level-left"><span class="level-item">2.2.1</span><span class="level-item">数据加载</span></span></a></li><li><a class="level is-mobile" href="#数据划分"><span class="level-left"><span class="level-item">2.2.2</span><span class="level-item">数据划分</span></span></a></li><li><a class="level is-mobile" href="#决策树预测"><span class="level-left"><span class="level-item">2.2.3</span><span class="level-item">决策树预测</span></span></a></li><li><a class="level is-mobile" href="#Bagging-Tree-数据模型构建"><span class="level-left"><span class="level-item">2.2.4</span><span class="level-item">Bagging Tree 数据模型构建</span></span></a></li><li><a class="level is-mobile" href="#准确率计算"><span class="level-left"><span class="level-item">2.2.5</span><span class="level-item">准确率计算</span></span></a></li></ul></li><li><a class="level is-mobile" href="#随机森林-Random-Forest"><span class="level-left"><span class="level-item">2.3</span><span class="level-item">随机森林 Random Forest</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#随机森林算法原理"><span class="level-left"><span class="level-item">2.3.1</span><span class="level-item">随机森林算法原理</span></span></a></li><li><a class="level is-mobile" href="#模型构建和数据预测"><span class="level-left"><span class="level-item">2.3.2</span><span class="level-item">模型构建和数据预测</span></span></a></li><li><a class="level is-mobile" href="#准确率计算-1"><span class="level-left"><span class="level-item">2.3.3</span><span class="level-item">准确率计算</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#提升算法-Boosting"><span class="level-left"><span class="level-item">3</span><span class="level-item">提升算法 Boosting</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#提升算法原理"><span class="level-left"><span class="level-item">3.1</span><span class="level-item">提升算法原理</span></span></a></li><li><a class="level is-mobile" href="#Adaboost"><span class="level-left"><span class="level-item">3.2</span><span class="level-item">Adaboost</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#AdaBoost-原理"><span class="level-left"><span class="level-item">3.2.1</span><span class="level-item">AdaBoost 原理</span></span></a></li><li><a class="level is-mobile" href="#模型构建和数据预测-1"><span class="level-left"><span class="level-item">3.2.2</span><span class="level-item">模型构建和数据预测</span></span></a></li><li><a class="level is-mobile" href="#准确率计算-2"><span class="level-left"><span class="level-item">3.2.3</span><span class="level-item">准确率计算</span></span></a></li></ul></li><li><a class="level is-mobile" href="#梯度提升树-GBDT"><span class="level-left"><span class="level-item">3.3</span><span class="level-item">梯度提升树 GBDT</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#梯度提升树算法原理"><span class="level-left"><span class="level-item">3.3.1</span><span class="level-item">梯度提升树算法原理</span></span></a></li><li><a class="level is-mobile" href="#梯度提升树模型构建及预测"><span class="level-left"><span class="level-item">3.3.2</span><span class="level-item">梯度提升树模型构建及预测</span></span></a></li><li><a class="level is-mobile" href="#准确率计算-3"><span class="level-left"><span class="level-item">3.3.3</span><span class="level-item">准确率计算</span></span></a></li></ul></li></ul></li></ul></div></div><style>.menu-list > li > a.is-active + .menu-list { display: block; }.menu-list > li > a + .menu-list { display: none; }</style><script src="/blog/js/toc.js" defer></script></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/blog/categories/Algorithm/"><span class="level-start"><span class="level-item">Algorithm</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Algorithm/Sorting-algorithm/"><span class="level-start"><span class="level-item">Sorting algorithm</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/blog/categories/Blog/"><span class="level-start"><span class="level-item">Blog</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Deep-Learning/"><span class="level-start"><span class="level-item">Deep Learning</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/"><span class="level-start"><span class="level-item">Machine Learning</span></span><span class="level-end"><span class="level-item tag">12</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Bagging-and-BoosTing/"><span class="level-start"><span class="level-item">Bagging and BoosTing</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Cluster/"><span class="level-start"><span class="level-item">Cluster</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Cluster/K-Means/"><span class="level-start"><span class="level-item">K-Means</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Decision-Tree/"><span class="level-start"><span class="level-item">Decision Tree</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/K-Means/"><span class="level-start"><span class="level-item">K-Means</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/K-Nearest-Neighbors/"><span class="level-start"><span class="level-item">K-Nearest Neighbors</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Linear-Regression/"><span class="level-start"><span class="level-item">Linear Regression</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Naive-Bayes/"><span class="level-start"><span class="level-item">Naive Bayes</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Neural-Network/"><span class="level-start"><span class="level-item">Neural Network</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Polynomial-Regression/"><span class="level-start"><span class="level-item">Polynomial Regression</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/blog/categories/Machine-Learning/Support-Vector-Machine/"><span class="level-start"><span class="level-item">Support Vector Machine</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/blog/categories/Ubuntu/"><span class="level-start"><span class="level-item">Ubuntu</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Ubuntu/ECS/"><span class="level-start"><span class="level-item">ECS</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/blog/categories/Ubuntu/ECS/Seafile/"><span class="level-start"><span class="level-item">Seafile</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li></ul></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/blog/tags/Algorithm/"><span class="tag">Algorithm</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Bagging/"><span class="tag">Bagging</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Blog/"><span class="tag">Blog</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/BoosTing/"><span class="tag">BoosTing</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Cluster/"><span class="tag">Cluster</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Decision-Tree/"><span class="tag">Decision Tree</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Deep-Learning/"><span class="tag">Deep Learning</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/ECS/"><span class="tag">ECS</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/GitHub-Pages/"><span class="tag">GitHub Pages</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Jekyll/"><span class="tag">Jekyll</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/K-Means/"><span class="tag">K-Means</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/K-Nearest-Neighbors/"><span class="tag">K-Nearest Neighbors</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Linear-Regression/"><span class="tag">Linear Regression</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/MAE/"><span class="tag">MAE</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/MAPE/"><span class="tag">MAPE</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/MSE/"><span class="tag">MSE</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Machine-Learning/"><span class="tag">Machine Learning</span><span class="tag">12</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Naive-Bayes/"><span class="tag">Naive Bayes</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Neural-Network/"><span class="tag">Neural Network</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Next/"><span class="tag">Next</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Polynomial-Regression/"><span class="tag">Polynomial Regression</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Seafile/"><span class="tag">Seafile</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Sorting-algorithm/"><span class="tag">Sorting algorithm</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Support-Vector-Machine/"><span class="tag">Support Vector Machine</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/Ubuntu/"><span class="tag">Ubuntu</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/blog/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/"><span class="tag">服务器</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/blog/">Laugh</a><p class="is-size-7"><span>&copy; 2020 Laugh</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" async></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/blog/js/column.js"></script><script src="/blog/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/blog/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/KaTeX/0.11.1/katex.min.css"><script src="https://cdnjs.loli.net/ajax/libs/KaTeX/0.11.1/katex.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/KaTeX/0.11.1/contrib/auto-render.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/KaTeX/0.11.1/contrib/mhchem.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdnjs.loli.net/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><!--!--><!--!--><script src="/blog/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/blog/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/blog/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
