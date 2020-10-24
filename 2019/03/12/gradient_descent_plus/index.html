@@ -1,234 +1,173 @@
 <!doctype html>
-<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="theme-color" content="#123456"><meta name="generator" content="Hexo 4.2.0"><title>机器学习|梯度下降详解 - Laugh&#039;s blog</title><link rel="manifest" href="/blog/manifest.json"><meta name="application-name" content="Laugh&#039;s blog"><meta name="msapplication-TileImage" content="https://avatars2.githubusercontent.com/u/38065710?s=400&amp;u=b32cf1cc11129ac10e78dd72a9e3dba0aa0d58bd&amp;v=4"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Laugh&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta description="在了解梯度下降（Gradient Descent）之前，我们先要知道有关线性回归的基本知识，这样可以进一步的加深对梯度下降的理解，当然梯度下降（Gradient Descent）并不单单只能进行回归预测，它还可以进行诸如分类等操作。"><meta property="og:type" content="blog"><meta property="og:title" content="机器学习|梯度下降详解"><meta property="og:url" content="http://www.laugh12321.cn/blog/2019/03/12/gradient_descent_plus/"><meta property="og:site_name" content="Laugh&#039;s blog"><meta property="og:description" content="在了解梯度下降（Gradient Descent）之前，我们先要知道有关线性回归的基本知识，这样可以进一步的加深对梯度下降的理解，当然梯度下降（Gradient Descent）并不单单只能进行回归预测，它还可以进行诸如分类等操作。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/14.jpg"><meta property="article:published_time" content="2019-03-12T00:00:00.000Z"><meta property="article:modified_time" content="2020-10-23T08:47:28.612Z"><meta property="article:author" content="Laugh"><meta property="article:tag" content="Machine Learning"><meta property="article:tag" content="GD"><meta property="article:tag" content="SGD"><meta property="article:tag" content="MBGD"><meta property="article:tag" content="BGD"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/14.jpg"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.laugh12321.cn/blog"},"headline":"Laugh's blog","image":[],"datePublished":"2019-03-12T00:00:00.000Z","dateModified":"2020-10-23T08:47:28.612Z","author":{"@type":"Person","name":"laugh12321"},"description":"在了解梯度下降（Gradient Descent）之前，我们先要知道有关线性回归的基本知识，这样可以进一步的加深对梯度下降的理解，当然梯度下降（Gradient Descent）并不单单只能进行回归预测，它还可以进行诸如分类等操作。"}</script><link rel="canonical" href="http://www.laugh12321.cn/blog/2019/03/12/gradient_descent_plus/"><link rel="icon" href="https://avatars2.githubusercontent.com/u/38065710?s=400&amp;u=b32cf1cc11129ac10e78dd72a9e3dba0aa0d58bd&amp;v=4"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.12.0/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/blog/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><script src="https://www.googletagmanager.com/gtag/js?id=UA-180999768-1" async></script><script>window.dataLayer = window.dataLayer || [];
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="theme-color" content="#123456"><meta name="generator" content="Hexo 4.2.0"><title>机器学习|梯度下降详解 - Laugh&#039;s blog</title><link rel="manifest" href="/blog/manifest.json"><meta name="application-name" content="Laugh&#039;s blog"><meta name="msapplication-TileImage" content="https://avatars2.githubusercontent.com/u/38065710?s=400&amp;u=b32cf1cc11129ac10e78dd72a9e3dba0aa0d58bd&amp;v=4"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Laugh&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta description="在了解梯度下降（Gradient Descent）之前，我们先要知道有关线性回归的基本知识，这样可以进一步的加深对梯度下降的理解，当然梯度下降（Gradient Descent）并不单单只能进行回归预测，它还可以进行诸如分类等操作。"><meta property="og:type" content="blog"><meta property="og:title" content="机器学习|梯度下降详解"><meta property="og:url" content="http://www.laugh12321.cn/blog/2019/03/12/gradient_descent_plus/"><meta property="og:site_name" content="Laugh&#039;s blog"><meta property="og:description" content="在了解梯度下降（Gradient Descent）之前，我们先要知道有关线性回归的基本知识，这样可以进一步的加深对梯度下降的理解，当然梯度下降（Gradient Descent）并不单单只能进行回归预测，它还可以进行诸如分类等操作。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/14.jpg"><meta property="article:published_time" content="2019-03-12T00:00:00.000Z"><meta property="article:modified_time" content="2020-10-24T10:37:38.116Z"><meta property="article:author" content="Laugh"><meta property="article:tag" content="Machine Learning"><meta property="article:tag" content="GD"><meta property="article:tag" content="SGD"><meta property="article:tag" content="MBGD"><meta property="article:tag" content="BGD"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/14.jpg"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.laugh12321.cn/blog"},"headline":"Laugh's blog","image":[],"datePublished":"2019-03-12T00:00:00.000Z","dateModified":"2020-10-24T10:37:38.116Z","author":{"@type":"Person","name":"laugh12321"},"description":"在了解梯度下降（Gradient Descent）之前，我们先要知道有关线性回归的基本知识，这样可以进一步的加深对梯度下降的理解，当然梯度下降（Gradient Descent）并不单单只能进行回归预测，它还可以进行诸如分类等操作。"}</script><link rel="canonical" href="http://www.laugh12321.cn/blog/2019/03/12/gradient_descent_plus/"><link rel="icon" href="https://avatars2.githubusercontent.com/u/38065710?s=400&amp;u=b32cf1cc11129ac10e78dd72a9e3dba0aa0d58bd&amp;v=4"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.12.0/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/blog/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><script src="https://www.googletagmanager.com/gtag/js?id=UA-180999768-1" async></script><script>window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
     
         gtag('config', 'UA-180999768-1');</script><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css"><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><link rel="alternate" href="/blog/atom.xml" title="Laugh's blog" type="application/atom+xml">
-</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/blog/">Laugh</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/blog/">首页</a><a class="navbar-item" href="/blog/archives">归档</a><a class="navbar-item" href="/blog/categories">分类</a><a class="navbar-item" href="/blog/tags">标签</a><a class="navbar-item" href="/blog/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="GitHub" href="https://github.com/laugh12321"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/14.jpg" alt="机器学习|梯度下降详解"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2019-03-12T00:00:00.000Z" title="2019-03-12T00:00:00.000Z">2019-03-12</time>发表</span><span class="level-item"><time dateTime="2020-10-23T08:47:28.612Z" title="2020-10-23T08:47:28.612Z">2020-10-23</time>更新</span><span class="level-item"><a class="link-muted" href="/blog/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><span> / </span><a class="link-muted" href="/blog/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/">梯度下降</a></span><span class="level-item">35 分钟读完 (大约5323个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">机器学习|梯度下降详解</h1><div class="content"><p>在了解<strong>梯度下降（Gradient Descent）</strong>之前，我们先要知道有关<strong>线性回归</strong>的基本知识，这样可以进一步的加深对<strong>梯度下降</strong>的理解，当然<strong>梯度下降（Gradient Descent）</strong>并不单单只能进行回归预测，它还可以进行诸如分类等操作。</p>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/blog/">Laugh</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/blog/">首页</a><a class="navbar-item" href="/blog/archives">归档</a><a class="navbar-item" href="/blog/categories">分类</a><a class="navbar-item" href="/blog/tags">标签</a><a class="navbar-item" href="/blog/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="GitHub" href="https://github.com/laugh12321"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/14.jpg" alt="机器学习|梯度下降详解"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2019-03-12T00:00:00.000Z" title="2019-03-12T00:00:00.000Z">2019-03-12</time>发表</span><span class="level-item"><time dateTime="2020-10-24T10:37:38.116Z" title="2020-10-24T10:37:38.116Z">2020-10-24</time>更新</span><span class="level-item"><a class="link-muted" href="/blog/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a><span> / </span><a class="link-muted" href="/blog/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/">梯度下降</a></span><span class="level-item">31 分钟读完 (大约4724个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">机器学习|梯度下降详解</h1><div class="content"><p>在了解<strong>梯度下降（Gradient Descent）</strong>之前，我们先要知道有关<strong>线性回归</strong>的基本知识，这样可以进一步的加深对<strong>梯度下降</strong>的理解，当然<strong>梯度下降（Gradient Descent）</strong>并不单单只能进行回归预测，它还可以进行诸如分类等操作。</p>
 <a id="more"></a>
 <p>关于<strong>线性回归</strong>的具体讲解本文不详细涉及，只简单列出几个相关公式。(关于线性回归可以看这篇 👉<a href="https://www.laugh12321.cn/2019/01/01/Linear_Regression/#more">传送门</a>)</p>
-<h3 id="线性回归"><a href="#线性回归" class="headerlink" title="线性回归"></a><a href="#%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92" title="线性回归"></a>线性回归</h3><p><strong>公式 4-1：线性回归模型预测</strong></p>
-<p>^y=θ0+θ1x1+θ2x2+…+θnxn</p>
-<p>$$y^=θ0+θ1x1+θ2x2+…+θnxn$$</p>
+<h3 id="线性回归"><a href="#线性回归" class="headerlink" title="线性回归"></a>线性回归</h3><p><strong>公式 4-1：线性回归模型预测</strong><br>$$<br>\hat{y} = \theta_0 + \theta_1x_{1} + \theta_2x_{2} + … + \theta_nx_{n}<br>$$</p>
 <ul>
-<li>^y$y^$ 是预测值</li>
-<li>n$n$ 是特征的数量</li>
-<li>xi$xi$ 是 i$i$ 个特征值</li>
-<li>θj$θj$ 是第 j$j$ 个模型参数 (包括偏置项 θ0$θ0$ 以及特征权重 θ1,θ2,…,θn$θ1,θ2,…,θn$</li>
+<li>$\hat{y}$ 是预测值</li>
+<li>$n$ 是特征的数量</li>
+<li>$x_i$ 是 $i$ 个特征值</li>
+<li>$θ_j$ 是第 $j$ 个模型参数 (包括偏置项 $θ_0$ 以及特征权重 $θ_1,θ_2,…,θ_n$</li>
 </ul>
 <p>也可以用更为简洁的向量化形式表达</p>
 <p><strong>公式 4-2：线性回归模型预测 (向量化)</strong></p>
-<p>^y=hθ(X)=θT⋅X</p>
-<p>$$y^=hθ(X)=θT⋅X$$</p>
+<p>$$<br>\hat{y} = h_{\theta}(X) = \theta^T \cdot X<br>$$</p>
 <ul>
-<li>θ$θ$ 是模型的参数向量，包括偏置项 θ0$θ0$ 以及特征权重 θ1$θ1$ 到 θn$θn$</li>
-<li>θT$θT$ 是 θ$θ$ 的转置向量 (为行向量，而不再是列向量)</li>
-<li>X$X$ 是实例的特征向量，包括从 θ0$θ0$ 到 θn,θ0$θn,θ0$ 永远为 1$1$</li>
-<li>θT⋅X$θT⋅X$ 是 θT$θT$ 和 X$X$ 的点积</li>
-<li>hθ$hθ$ 是模型参数 θ$θ$ 的假设函数</li>
+<li>$θ$ 是模型的参数向量，包括偏置项 $θ_0$ 以及特征权重 $θ_1$ 到 $θ_n$</li>
+<li>$θ^T$ 是 $θ$ 的转置向量 (为行向量，而不再是列向量)</li>
+<li>$X$ 是实例的特征向量，包括从 $θ_0$ 到 $θ_n,θ_0$ 永远为 $1$</li>
+<li>$θ^T⋅X$ 是 $θ^T$ 和 $X$ 的点积</li>
+<li>$h_θ$ 是模型参数 $θ$ 的假设函数</li>
 </ul>
-<p><strong>公式 4-3：线性回归模型的 MSE$MSE$ 成本函数</strong></p>
-<p>MSE(X,hθ)=1mm∑i=1(θT⋅X(i)−y(i))2</p>
-<p>$$MSE(X,hθ)=1m∑i=1m(θT⋅X(i)−y(i))2$$</p>
-<h3 id="标准方程"><a href="#标准方程" class="headerlink" title="标准方程"></a><a href="#%E6%A0%87%E5%87%86%E6%96%B9%E7%A8%8B" title="标准方程"></a>标准方程</h3><p>为了得到使成本函数最小的 θ$θ$ 值，有一个闭式解方法——也就是一个直接得出结果的数学方程，即标准方程。</p>
+<p><strong>公式 4-3：线性回归模型的 $MSE$ 成本函数</strong></p>
+<p>$$<br>MSE(X, h_{\theta}) = \frac{1}{m}\sum_{i=1}^{m} (\theta^T \cdot X^{(i)} - y^{(i)})^2<br>$$</p>
+<h3 id="标准方程"><a href="#标准方程" class="headerlink" title="标准方程"></a>标准方程</h3><p>为了得到使成本函数最小的 $θ$ 值，有一个闭式解方法——也就是一个直接得出结果的数学方程，即标准方程。</p>
 <p><strong>公式 4-4：标准方程</strong></p>
-<p>MSE(X,hθ)=1mm∑i=1(θT⋅X(i)−y(i))2</p>
-<p>$$MSE(X,hθ)=1m∑i=1m(θT⋅X(i)−y(i))2$$</p>
+<p>$$<br>MSE(X, h_{\theta}) = \frac{1}{m}\sum_{i=1}^{m} (\theta^T \cdot X^{(i)} - y^{(i)})^2<br>$$</p>
 <ul>
-<li>^θ$θ^$ 是使成本函数最小的 θ$θ$ 值</li>
-<li>y$y$ 是包含 y(1)$y(1)$ 到 y(m)$y(m)$ 的目标值量</li>
+<li>$\hat{\theta}$ 是使成本函数最小的 $θ$ 值</li>
+<li>$y$ 是包含 $y^{(1)}$ 到 $y^{(m)}$ 的目标值量</li>
 </ul>
 <p>我们生成一些线性数据来测试这个公式：</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">X = <span class="number">2</span> * np.random.rand(<span class="number">100</span>, <span class="number">1</span>)</span><br><span class="line">y = <span class="number">4</span> + <span class="number">3</span> * X + np.random.randn(<span class="number">100</span>, <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line">%matplotlib inline</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">12</span>,<span class="number">8</span>))</span><br><span class="line">ax.plot(X, y, <span class="string">&quot;b.&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/output_6_0.png">
+</center>
 
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import numpy as np  </span><br><span class="line">  </span><br><span class="line">X &#x3D; 2 \* np.random.rand(100, 1)  </span><br><span class="line">y &#x3D; 4 + 3 \* X + np.random.randn(100, 1)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>现在我们使用标准方程来计算 $\hat{y}$。使用 Numpy 的线性代数模块 <code>np.linalg</code> 中的 <code>inv()</code> 函数来对矩阵求逆，并用 <code>dot()</code> 方法计算矩阵的内积：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">X_b = np.c_[np.ones((<span class="number">100</span>, <span class="number">1</span>)), X] <span class="comment"># add xo = 1 to each instance</span></span><br><span class="line">theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(y)</span><br></pre></td></tr></table></figure>
 
-<p> |<br>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line">7  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">import matplotlib.pyplot as plt  </span><br><span class="line">%matplotlib inline  </span><br><span class="line">  </span><br><span class="line">\# 可视化  </span><br><span class="line">fig, ax &#x3D; plt.subplots(figsize&#x3D;(12,8))  </span><br><span class="line">ax.plot(X, y, &quot;b.&quot;)  </span><br><span class="line">plt.show()  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/output_6_0.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/output_6_0.png"></a></p>
-<p>现在我们使用标准方程来计算 ^θ$θ^$。使用 Numpy 的线性代数模块 (<code>np.linalg</code>) 中的 <code>inv()</code> 函数来对矩阵求逆，并用 <code>dot()</code> 方法计算矩阵的内积：</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">X\_b &#x3D; np.c\_\[np.ones((100, 1)), X\] # add xo &#x3D; 1 to each instance  </span><br><span class="line">theta\_best &#x3D; np.linalg.inv(X\_b.T.dot(X\_b)).dot(X\_b.T).dot(y)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
-<p>我们实际用来生成数据的函数是 y=4+3x0+高斯噪声$y=4+3x0+高斯噪声$。</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">theta\_best  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<p>我们实际用来生成数据的函数是 $y = 4 + 3x_0 + 高斯噪声$。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">theta_best</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array([[4.0939709 ],</span><br><span class="line">       [3.08934507]]) </span><br></pre></td></tr></table></figure>
 
-<p>我们期待的是 θ0=4,θ1=3$θ0=4,θ1=3$ 得到的是 θ0=4.0939709,θ1=3.08934507$θ0=4.0939709,θ1=3.08934507$。非常接近了，因为噪声的存在使其不可能完全还原为原本的函数。</p>
-<p>现在可以用 ^θ$θ^$ 做出预测：</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">X\_new &#x3D; np.array(\[\[0\], \[2\]\])  </span><br><span class="line">X\_new\_b &#x3D; np.c\_\[np.ones((2, 1)), X\_new\] # add x0 &#x3D; 1 to each instance  </span><br><span class="line">y\_predict &#x3D; X\_new\_b.dot(theta\_best)  </span><br><span class="line">y\_predict  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<p>我们期待的是 $θ_0=4,θ_1=3$ 得到的是 $\theta_0 = 4.0939709, \theta_1 = 3.08934507$。非常接近了，因为噪声的存在使其不可能完全还原为原本的函数。</p>
+<p>现在可以用 $\hat{\theta}$ 做出预测：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">X_new = np.array([[<span class="number">0</span>], [<span class="number">2</span>]])</span><br><span class="line">X_new_b = np.c_[np.ones((<span class="number">2</span>, <span class="number">1</span>)), X_new] <span class="comment"># add x0 = 1 to each instance</span></span><br><span class="line">y_predict = X_new_b.dot(theta_best)</span><br><span class="line">y_predict</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array([[ 4.0939709 ],</span><br><span class="line">       [10.27266104]]) </span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 绘制模型的预测结果</span></span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">12</span>,<span class="number">8</span>))</span><br><span class="line">ax.plot(X_new, y_predict, <span class="string">&quot;r-&quot;</span>)</span><br><span class="line">ax.plot(X, y, <span class="string">&quot;b.&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
 
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/output_14_0.png">
+</center>
 
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">\# 绘制模型的预测结果  </span><br><span class="line">fig, ax &#x3D; plt.subplots(figsize&#x3D;(12,8))  </span><br><span class="line">ax.plot(X\_new, y\_predict, &quot;r-&quot;)  </span><br><span class="line">ax.plot(X, y, &quot;b.&quot;)  </span><br><span class="line">plt.show()  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/output_14_0.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/output_14_0.png"></a></p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">\# Scikit-Learn 的等效代码  </span><br><span class="line">from sklearn.linear\_model import LinearRegression  </span><br><span class="line">  </span><br><span class="line">lin\_reg &#x3D; LinearRegression()  </span><br><span class="line">lin\_reg.fit(X, y)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Scikit-Learn 的等效代码</span></span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression</span><br><span class="line"></span><br><span class="line">lin_reg = LinearRegression()</span><br><span class="line">lin_reg.fit(X, y)</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LinearRegression(copy_X&#x3D;True, fit_intercept&#x3D;True, n_jobs&#x3D;None,</span><br><span class="line">         normalize&#x3D;False) </span><br></pre></td></tr></table></figure>
-
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lin\_reg.intercept\_, lin\_reg.coef\_  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lin_reg.intercept_, lin_reg.coef_</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(array([4.0939709]), array([[3.08934507]])) </span><br></pre></td></tr></table></figure>
-
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lin\_reg.predict(X\_new)  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lin_reg.predict(X_new)</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array([[ 4.0939709 ],</span><br><span class="line">       [10.27266104]]) </span><br></pre></td></tr></table></figure>
 
-<h3 id="梯度下降"><a href="#梯度下降" class="headerlink" title="梯度下降"></a><a href="#%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D" title="梯度下降"></a>梯度下降</h3><p>梯度下降是一种非常通用的优化算法，能够为大范围的问题找到最优解。梯度下降的中心思想就是迭代地调整参数从而使成本函数最小化。</p>
-<p>假设你迷失在山上的浓雾之中，你能感觉到的只有你脚下路面的坡度。快速到达山脚的一个策略就是沿着最陡的方向下坡。这就是梯度下降的做法：通过测量参数向量 θ$θ$ 相关的误差函数的局部梯度，并不断沿着降低梯度的方向调整，直到梯度降为0，到达最小值！</p>
-<p>具体来说，首先使用一个随机的 θ$θ$ 值（这被称为随机初始化）， 然后逐步改进，每次踏出一步，每一步都尝试降低一点成本函数（如 MSE$MSE$ ），直到算法收敛出一个最小值（参见图4-3）</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_00.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_00.jpg"></a></p>
+<h3 id="梯度下降"><a href="#梯度下降" class="headerlink" title="梯度下降"></a>梯度下降</h3><p>梯度下降是一种非常通用的优化算法，能够为大范围的问题找到最优解。梯度下降的中心思想就是迭代地调整参数从而使成本函数最小化。</p>
+<p>假设你迷失在山上的浓雾之中，你能感觉到的只有你脚下路面的坡度。快速到达山脚的一个策略就是沿着最陡的方向下坡。这就是梯度下降的做法：通过测量参数向量 $θ$ 相关的误差函数的局部梯度，并不断沿着降低梯度的方向调整，直到梯度降为0，到达最小值！</p>
+<p>具体来说，首先使用一个随机的 $θ$ 值（这被称为随机初始化），然后逐步改进，每次踏出一步，每一步都尝试降低一点成本函数（如 $MSE$ ），直到算法收敛出一个最小值（参见图4-3）</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_00.jpg">
+</center>
+
 <p>梯度下降中一个重要参数是每一步的步长，这取决于超参数学习率。如果学习率太低，算法需要经过大量迭代才能收敛，这将耗费很长时间（参见图4-4）。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_01.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_01.jpg"></a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_01.jpg">
+</center>
+
 <p>反过来说，如果学习率太高，那你可能会越过山谷直接到达山的另一边，甚至有可能比之前的起点还要高。这会导致算法发散，值越来越大，最后无法找到好的解决方案（参见图4-5）。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_02.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_02.jpg"></a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_02.jpg">
+</center>
+
 <p>最后，并不是所有的成本函数看起来都像一个漂亮的碗。有的可能看着像洞、像山脉、像高原或者是各种不规则的地形，导致很难收敛到最小值。图4-6显示了梯度下降的两个主要挑战：如果随机初始化，算法从左侧起步，那么会收敛到一个局部最小值，而不是全局最小值。如果算法从右侧起步，那么需要经过很长时间才能越过整片高原，如果你停下得太早，将永远达不到全局最小值。</p>
-<p>幸好，线性回归模型的 MSE$MSE$ 成本函数恰好是个凸函数，这意味着连接曲线上任意两个点的线段永远不会跟曲线相交。也就是说不存在局部最小，只有一个全局最小值。它同时也是一个连续函数，所以斜率不会产生陡峭的变化。这两件事保证的结论是：即便是乱走，梯度下降都可以趋近到全局最小值（只要等待时间足够长，学习率也不是太高）。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_03.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_03.jpg"></a></p>
-<p>成本函数虽然是碗状的，但如果不同特征的尺寸差别巨大，那它可能是一个非常细长的碗。如图4-7所示的梯度下降，左边的训练集上特征1和特征2具有相同的数值规模，而右边的训练集上，特征1的值则比特征2要小得多。因为特征1的值较小，所以 θ1$θ1$ 需要更大 的变化来影响成本函数，这就是为什么碗形会沿着 θ1$θ1$ 轴拉长。）</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_04.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_04.jpg"></a></p>
-<p>正如你所见，左图的梯度下降算法直接走向最小值，可以快速到达。而在右图中，先是沿着与全局最小值方向近乎垂直的方向前进， 接下来是一段几乎平坦的长长的山谷。最终还是会抵达最小值，但是这需要花费大量的时间。</p>
+<p>幸好，线性回归模型的 $MSE$ 成本函数恰好是个凸函数，这意味着连接曲线上任意两个点的线段永远不会跟曲线相交。也就是说不存在局部最小，只有一个全局最小值。它同时也是一个连续函数，所以斜率不会产生陡峭的变化。这两件事保证的结论是：即便是乱走，梯度下降都可以趋近到全局最小值（只要等待时间足够长，学习率也不是太高）。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_03.jpg">
+</center>
+
+<p>成本函数虽然是碗状的，但如果不同特征的尺寸差别巨大，那它可能是一个非常细长的碗。如图4-7所示的梯度下降，左边的训练集上特征1和特征2具有相同的数值规模，而右边的训练集上，特征1的值则比特征2要小得多。因为特征1的值较小，所以 $θ_1$ 需要更大的变化来影响成本函数，这就是为什么碗形会沿着 $θ_1$ 轴拉长。）</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_04.jpg">
+</center>
+
+<p>正如你所见，左图的梯度下降算法直接走向最小值，可以快速到达。而在右图中，先是沿着与全局最小值方向近乎垂直的方向前进，接下来是一段几乎平坦的长长的山谷。最终还是会抵达最小值，但是这需要花费大量的时间。</p>
 <blockquote>
-<p><strong>注意：</strong> 应用梯度下降时，需要保证所有特征值的大小比例都差不多 （比如使用Scikit-Learn的StandardScaler类），否则收敛的时间会长很多。</p>
+<p><strong>注意：</strong> 应用梯度下降时，需要保证所有特征值的大小比例都差不多 （比如使用<code>Scikit-Learn</code>的<code>StandardScaler</code>类），否则收敛的时间会长很多。</p>
 </blockquote>
 <p>这张图也说明，训练模型也就是搜寻使成本函数（在训练集上）最小化的参数组合。这是模型参数空间层面上的搜索：模型的参数越多，这个空间的维度就越多，搜索就越难。同样是在干草堆里寻找一根针，在一个三百维的空间里就比在一个三维空间里要棘手得多。幸运的是，线性回归模型的成本函数是凸函数，针就躺在碗底。</p>
-<h3 id="批量梯度下降"><a href="#批量梯度下降" class="headerlink" title="批量梯度下降"></a><a href="#%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D" title="批量梯度下降"></a>批量梯度下降</h3><p>要实现梯度下降，你需要计算每个模型关于参数 θj$θj$ 的成本函数的梯度。换言之，你需要计算的是如果改变 θj$θj$ ，成本函数会改变多少。 这被称为偏导数。这就好比是在问 “如果我面向东，我脚下的坡度斜率是多少？” 然后面向北问同样的问题（如果你想象超过三个维度的宇宙，对于其他的维度以此类推）。公式4-5计算了关于参数 θj$θj$ 的成本函数的偏导数，计作 ∂∂θjMSE(θ)$∂∂θjMSE(θ)$</p>
+<h3 id="批量梯度下降"><a href="#批量梯度下降" class="headerlink" title="批量梯度下降"></a>批量梯度下降</h3><p>要实现梯度下降，你需要计算每个模型关于参数 $θ_j$ 的成本函数的梯度。换言之，你需要计算的是如果改变 $θ_j$ ，成本函数会改变多少。这被称为偏导数。这就好比是在问 “如果我面向东，我脚下的坡度斜率是多少？” 然后面向北问同样的问题（如果你想象超过三个维度的宇宙，对于其他的维度以此类推）。公式4-5计算了关于参数 $θ_j$ 的成本函数的偏导数，计作$\frac{\partial}{\partial \theta_j}MSE(\theta)$</p>
 <p><strong>公式 4-5 ：成本函数的偏导数</strong></p>
-<p>∂∂θjMSE(θ)=2mm∑i=1(θT⋅X(i)−y(i))x(i)j</p>
-<p>$$∂∂θjMSE(θ)=2m∑i=1m(θT⋅X(i)−y(i))xj(i)$$</p>
-<p>如果不想单独计算这些梯度，可以使用公式4-6对其进行一次性计算。梯度向量，记作 ∇θMSE(θ)$∇θMSE(θ)$ ，包含所有成本函数（每个模型参数一个）的偏导数。</p>
+<p>$$<br>\frac{\partial}{\partial \theta_j}MSE(\theta) = \frac{2}{m}\sum_{i=1}^{m} (\theta^T \cdot X^{(i)} - y^{(i)})x_j^{(i)}<br>$$</p>
+<p>如果不想单独计算这些梯度，可以使用公式4-6对其进行一次性计算。梯度向量，记作 $\nabla_\theta MSE(\theta)$ ，包含所有成本函数（每个模型参数一个）的偏导数。</p>
 <p><strong>公式 4-6 ：成本函数的梯度向量</strong></p>
-<p>∇θMSE(θ)=⎡⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢⎣∂∂θ0MSE(θ)∂∂θ1MSE(θ)…∂∂θnMSE(θ)⎤⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥⎦=2mXT⋅(X⋅θ−y)</p>
-<p>$$∇θMSE(θ)=[∂∂θ0MSE(θ)∂∂θ1MSE(θ)…∂∂θnMSE(θ)]=2mXT⋅(X⋅θ−y)$$</p>
+<p>$$<br>\nabla_\theta MSE(\theta) =  \left[  \begin{matrix}    \frac{\partial}{\partial \theta_0}MSE(\theta) \    \frac{\partial}{\partial \theta_1}MSE(\theta) \    … \    \frac{\partial}{\partial \theta_n}MSE(\theta)   \end{matrix}   \right] = \frac{2}{m}X^T \cdot (X \cdot \theta - y)<br>$$</p>
 <blockquote>
-<p><strong>注意：</strong> 公式4-6在计算梯度下降的每一步时，都是基于完整的训练集 X$X$ 的。这就是为什么该算法会被称为批量梯度下降：每一步都使用整批训练数据。因此，面对非常庞大的训练集时，算法会变得极慢（不过我们即将看到快得多的梯度下降算法）。但是，梯度下降算法随特征数量扩展的表现比较好：如果要训练的线性模型拥有几十万个特征，使用梯度下降比标准方程要快得多。</p>
+<p><strong>注意：</strong> 公式4-6在计算梯度下降的每一步时，都是基于完整的训练集 $X$ 的。这就是为什么该算法会被称为批量梯度下降：每一步都使用整批训练数据。因此，面对非常庞大的训练集时，算法会变得极慢（不过我们即将看到快得多的梯度下降算法）。但是，梯度下降算法随特征数量扩展的表现比较好：如果要训练的线性模型拥有几十万个特征，使用梯度下降比标准方程要快得多。</p>
 </blockquote>
-<p>一旦有了梯度向量，哪个点向上，就朝反方向下坡。也就是从 θ$θ$ 中减去 ∇θMSE(θ)$∇θMSE(θ)$ 。这时学习率 η$η$ 就发挥作用了：用梯度向量乘以 η$η$ 确定下坡步长的大小（公式4-7）。</p>
+<p>一旦有了梯度向量，哪个点向上，就朝反方向下坡。也就是从 $θ$ 中减去 $\nabla_\theta MSE(\theta)$ 。这时学习率 $η$ 就发挥作用了：用梯度向量乘以 $η$ 确定下坡步长的大小（公式4-7）。</p>
 <p><strong>公式 4-6 ：梯度下降步长</strong></p>
-<p>θ(nextstep)=θ−η∇θMSE(θ)</p>
-<p>$$θ(nextstep)=θ−η∇θMSE(θ)$$</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line">7  </span><br><span class="line">8  </span><br><span class="line">9  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">eta &#x3D; 0.1  # learning rate   </span><br><span class="line">n\_iterations &#x3D; 1000   </span><br><span class="line">m &#x3D; 100  </span><br><span class="line">  </span><br><span class="line">theta &#x3D; np.random.randn(2,1)  # random initialization  </span><br><span class="line">  </span><br><span class="line">for iteration in range(n\_iterations):      </span><br><span class="line">    gradients &#x3D; 2&#x2F;m \* X\_b.T.dot(X\_b.dot(theta) - y)      </span><br><span class="line">    theta &#x3D; theta - eta \* gradients  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |<br>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">theta  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<p>$$<br>\theta^{(next  step)} = \theta - \eta\nabla_\theta MSE(\theta)<br>$$</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">eta = <span class="number">0.1</span>  <span class="comment"># learning rate </span></span><br><span class="line">n_iterations = <span class="number">1000</span> </span><br><span class="line">m = <span class="number">100</span></span><br><span class="line"></span><br><span class="line">theta = np.random.randn(<span class="number">2</span>,<span class="number">1</span>)  <span class="comment"># random initialization</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> iteration <span class="keyword">in</span> <span class="built_in">range</span>(n_iterations):    </span><br><span class="line">    gradients = <span class="number">2</span>/m * X_b.T.dot(X_b.dot(theta) - y)    </span><br><span class="line">    theta = theta - eta * gradients</span><br><span class="line">    </span><br><span class="line">theta</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array([[4.0939709 ],</span><br><span class="line">       [3.08934507]]) </span><br></pre></td></tr></table></figure>
 
-<p>这不正是标准方程的发现么！梯度下降表现完美。如果使用了其他的学习率 η$η$ 呢？图4-8展现了分别使用三种不同的学习率时， 梯度下降的前十步（虚线表示起点）。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_05.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_05.jpg"></a></p>
-<p>左图的学习率太低：算法最终还是能找到解决方法，就是需要太长时间。中间的学习率看起来非常棒：几次迭代就收敛出了最终解。 而右边的学习率太高：算法发散，直接跳过了数据区域，并且每一步都离实际解决方案越来越远。</p>
+<p>这不正是标准方程的发现么！梯度下降表现完美。如果使用了其他的学习率 $η$ 呢？图4-8展现了分别使用三种不同的学习率时，梯度下降的前十步（虚线表示起点）。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_05.jpg">
+</center>
+
+<p>左图的学习率太低：算法最终还是能找到解决方法，就是需要太长时间。中间的学习率看起来非常棒：几次迭代就收敛出了最终解。而右边的学习率太高：算法发散，直接跳过了数据区域，并且每一步都离实际解决方案越来越远。</p>
 <p>要找到合适的学习率，可以使用网格搜索。但是你可能需要限制迭代次数，这样网格搜索可以淘汰掉那些收敛耗时太长的模型。</p>
-<p>你可能会问，要怎么限制迭代次数呢？如果设置太低，算法可能在离最优解还很远时就停了；但是如果设置得太高，模型达到最优解后，继续迭代参数不再变化，又会浪费时间。一个简单的办法是，在 开始时设置一个非常大的迭代次数，但是当梯度向量的值变得很微小时中断算法——也就是当它的范数变得低于 ε$ε$（称为容差）时，因为这时梯度下降已经（几乎）到达了最小值。</p>
+<p>你可能会问，要怎么限制迭代次数呢？如果设置太低，算法可能在离最优解还很远时就停了；但是如果设置得太高，模型达到最优解后，继续迭代参数不再变化，又会浪费时间。一个简单的办法是，在开始时设置一个非常大的迭代次数，但是当梯度向量的值变得很微小时中断算法——也就是当它的范数变得低于 $ε$（称为容差）时，因为这时梯度下降已经（几乎）到达了最小值。</p>
 <blockquote>
 <p><strong>收敛率</strong></p>
-<p>成本函数为凸函数，并且斜率没有陡峭的变化时（如 MSE$MSE$ 成本函数），通过批量梯度下降可以看出一个固定的学习率有一个收敛率，为 0(1迭代次数)$0(1迭代次数)$。换句话说，如果将容差 ε$ε$ 缩小为原来的 110$110$（以得到更精确的解），算法将不得不运行10倍的迭代次数</p>
+<p>成本函数为凸函数，并且斜率没有陡峭的变化时（如 $MSE$ 成本函数），通过批量梯度下降可以看出一个固定的学习率有一个收敛率，为 $0(\dfrac{1}{迭代次数})$。换句话说，如果将容差 $ε$ 缩小为原来的 $\dfrac{1}{10}$（以得到更精确的解），算法将不得不运行10倍的迭代次数</p>
 </blockquote>
-<h3 id="随机梯度下降"><a href="#随机梯度下降" class="headerlink" title="随机梯度下降"></a><a href="#%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D" title="随机梯度下降"></a>随机梯度下降</h3><p>批量梯度下降的主要问题是它要用整个训练集来计算每一步的梯度，所以训练集很大时，算法会特别慢。与之相反的极端是随机梯度下降，每一步在训练集中随机选择一个实例，并且仅基于该单个实例来计算梯度。显然，这让算法变得快多了，因为每个迭代都只需要操作少量的数据。它也可以被用来训练海量的数据集，因为每次迭代只需要在内存中运行一个实例即可（SGD$SGD$ 可以作为核外算法实现）。</p>
+<h3 id="随机梯度下降"><a href="#随机梯度下降" class="headerlink" title="随机梯度下降"></a>随机梯度下降</h3><p>批量梯度下降的主要问题是它要用整个训练集来计算每一步的梯度，所以训练集很大时，算法会特别慢。与之相反的极端是随机梯度下降，每一步在训练集中随机选择一个实例，并且仅基于该单个实例来计算梯度。显然，这让算法变得快多了，因为每个迭代都只需要操作少量的数据。它也可以被用来训练海量的数据集，因为每次迭代只需要在内存中运行一个实例即可（$SGD$ 可以作为核外算法实现）。</p>
 <p>另一方面，由于算法的随机性质，它比批量梯度下降要不规则得多。成本函数将不再是缓缓降低直到抵达最小值，而是不断上上下下，但是从整体来看，还是在慢慢下降。随着时间推移，最终会非常接近最小值，但是即使它到达了最小值，依旧还会持续反弹，永远不会停止（见图4-9）。所以算法停下来的参数值肯定是足够好的，但不是最优的。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_06.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_06.jpg"></a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_06.jpg">
+</center>
+
 <p>当成本函数非常不规则时（见图4-6），随机梯度下降其实可以帮助算法跳出局部最小值，所以相比批量梯度下降，它对找到全局最小值更有优势。</p>
-<p>因此，随机性的好处在于可以逃离局部最优，但缺点是永远定位不出最小值。要解决这个困境，有一个办法是逐步降低学习率。开始的步长比较大（这有助于快速进展和逃离局部最小值），然后越来越小，让算法尽量靠近全局最小值。这个过程叫作<strong>模拟退火</strong>，因为它类似于冶金时熔化的金属慢慢冷却的退火过程。确定每个迭代学习率的函数叫作<strong>学习计划</strong>。如果学习率降得太快，可能会陷入局部最小值， 甚至是停留在走向最小值的半途中。如果学习率降得太慢，你需要太长时间才能跳到差不多最小值附近，如果提早结束训练，可能只得到一个次优的解决方案。</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line">7  </span><br><span class="line">8  </span><br><span class="line">9  </span><br><span class="line">10  </span><br><span class="line">11  </span><br><span class="line">12  </span><br><span class="line">13  </span><br><span class="line">14  </span><br><span class="line">15  </span><br><span class="line">16  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>因此，随机性的好处在于可以逃离局部最优，但缺点是永远定位不出最小值。要解决这个困境，有一个办法是逐步降低学习率。开始的步长比较大（这有助于快速进展和逃离局部最小值），然后越来越小，让算法尽量靠近全局最小值。这个过程叫作<strong>模拟退火</strong>，因为它类似于冶金时熔化的金属慢慢冷却的退火过程。确定每个迭代学习率的函数叫作<strong>学习计划</strong>。如果学习率降得太快，可能会陷入局部最小值，甚至是停留在走向最小值的半途中。如果学习率降得太慢，你需要太长时间才能跳到差不多最小值附近，如果提早结束训练，可能只得到一个次优的解决方案。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">n_epochs = <span class="number">50</span> </span><br><span class="line">t0, t1 = <span class="number">5</span>, <span class="number">50</span>  <span class="comment"># learning schedule hyperparameters</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">learning_schedule</span>(<span class="params">t</span>):</span>    </span><br><span class="line">    <span class="keyword">return</span> t0 / (t + t1)</span><br><span class="line"></span><br><span class="line">theta = np.random.randn(<span class="number">2</span>,<span class="number">1</span>)  <span class="comment"># random initialization</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(n_epochs):    </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(m):        </span><br><span class="line">        random_index = np.random.randint(m)        </span><br><span class="line">        xi = X_b[random_index:random_index+<span class="number">1</span>]        </span><br><span class="line">        yi = y[random_index:random_index+<span class="number">1</span>]        </span><br><span class="line">        gradients = <span class="number">2</span> * xi.T.dot(xi.dot(theta) - yi)        </span><br><span class="line">        eta = learning_schedule(epoch * m + i)        </span><br><span class="line">        theta = theta - eta * gradients</span><br></pre></td></tr></table></figure>
 
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">n\_epochs &#x3D; 50   </span><br><span class="line">t0, t1 &#x3D; 5, 50  # learning schedule hyperparameters  </span><br><span class="line">  </span><br><span class="line">def learning\_schedule(t):      </span><br><span class="line">    return t0 &#x2F; (t + t1)  </span><br><span class="line">  </span><br><span class="line">theta &#x3D; np.random.randn(2,1)  # random initialization  </span><br><span class="line">  </span><br><span class="line">for epoch in range(n\_epochs):      </span><br><span class="line">    for i in range(m):          </span><br><span class="line">        random\_index &#x3D; np.random.randint(m)          </span><br><span class="line">        xi &#x3D; X\_b\[random\_index:random\_index+1\]          </span><br><span class="line">        yi &#x3D; y\[random\_index:random\_index+1\]          </span><br><span class="line">        gradients &#x3D; 2 \* xi.T.dot(xi.dot(theta) - yi)          </span><br><span class="line">        eta &#x3D; learning\_schedule(epoch \* m + i)          </span><br><span class="line">        theta &#x3D; theta - eta \* gradients  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
-<p>按照惯例，我们用 m$m$ 来表示迭代次数，每一次迭代称为一轮。前面的批量梯度下降需要在整个训练集上迭代 1000$1000$次，而这段代码只迭代了 50$50$ 次就得到了一个相当不错的解：</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">theta  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<p>按照惯例，我们用 $m$ 来表示迭代次数，每一次迭代称为一轮。前面的批量梯度下降需要在整个训练集上迭代 $1000$次，而这段代码只迭代了 $50$ 次就得到了一个相当不错的解：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">theta  </span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array([[4.11135275],</span><br><span class="line">       [3.06756448]]) </span><br></pre></td></tr></table></figure>
 
 <p>图 4-10 显示了训练过程的前 10 步 (注意不规则的步子)</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_07.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_07.jpg"></a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_07.jpg">
+</center>
+
 <p>因为实例是随机挑选，所以在同一轮里某些实例可能被挑选多次，而有些实例则完全没被选到。如果你希望每一轮算法都能遍历每个实例，有一种办法是将训练集洗牌打乱，然后一个接一个的使用实例，用完再重新洗牌，以此继续。不过这种方法通常收敛得更慢。</p>
-<p>在 <code>Scikit-Learn</code> 里，用 SGD$SGD$ 执行线性回归可以使用 <code>SGDRegressor</code> 类，其默认优化的成本函数是平方误差。下面这段代码从学习率 0.1 开始（<code>eta0=0.1</code>），使用默认的学习计划（跟前面的学习计划不同） 运行了50 轮，而且没有使用任何正则化（<code>penalty=None</code>）：</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line">2  </span><br><span class="line">3  </span><br><span class="line">4  </span><br><span class="line">5  </span><br><span class="line">6  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">import warnings  </span><br><span class="line">warnings.filterwarnings(&#39;ignore&#39;)  </span><br><span class="line">from sklearn.linear\_model import SGDRegressor   </span><br><span class="line">  </span><br><span class="line">sgd\_reg &#x3D; SGDRegressor(n\_iter&#x3D;50, penalty&#x3D;None, eta0&#x3D;0.1)   </span><br><span class="line">sgd\_reg.fit(X, y.ravel())  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<p>在 <code>Scikit-Learn</code> 里，用 $SGD$ 执行线性回归可以使用 <code>SGDRegressor</code> 类，其默认优化的成本函数是平方误差。下面这段代码从学习率 0.1 开始（<code>eta0=0.1</code>），使用默认的学习计划（跟前面的学习计划不同） 运行了50 轮，而且没有使用任何正则化（<code>penalty=None</code>）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> warnings</span><br><span class="line">warnings.filterwarnings(<span class="string">&#x27;ignore&#x27;</span>)</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> SGDRegressor </span><br><span class="line"></span><br><span class="line">sgd_reg = SGDRegressor(n_iter=<span class="number">50</span>, penalty=<span class="literal">None</span>, eta0=<span class="number">0.1</span>) </span><br><span class="line">sgd_reg.fit(X, y.ravel())</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">SGDRegressor(alpha&#x3D;0.0001, average&#x3D;False, early_stopping&#x3D;False, epsilon&#x3D;0.1,</span><br><span class="line">       eta0&#x3D;0.1, fit_intercept&#x3D;True, l1_ratio&#x3D;0.15,</span><br><span class="line">       learning_rate&#x3D;&#39;invscaling&#39;, loss&#x3D;&#39;squared_loss&#39;, max_iter&#x3D;None,</span><br><span class="line">       n_iter&#x3D;50, n_iter_no_change&#x3D;5, penalty&#x3D;None, power_t&#x3D;0.25,</span><br><span class="line">       random_state&#x3D;None, shuffle&#x3D;True, tol&#x3D;None, validation_fraction&#x3D;0.1,</span><br><span class="line">       verbose&#x3D;0, warm_start&#x3D;False) </span><br></pre></td></tr></table></figure>
 
 <p>你再次得到了一个跟标准方程的解非常相近的解决方案：</p>
-<p>| </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> | </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sgd\_reg.intercept\_, sgd\_reg.coef\_  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> |</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sgd_reg.intercept_, sgd_reg.coef_</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(array([4.08805401]), array([3.08242337])) </span><br></pre></td></tr></table></figure>
 
-<h3 id="小批量梯度下降"><a href="#小批量梯度下降" class="headerlink" title="小批量梯度下降"></a><a href="#%E5%B0%8F%E6%89%B9%E9%87%8F%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D" title="小批量梯度下降"></a>小批量梯度下降</h3><p>我们要了解的最后一个梯度下降算法叫作<strong>小批量梯度下降</strong>。一旦理解了批量梯度下降和随机梯度下降，这个算法就非常容易理解了： 每一步的梯度计算，既不是基于整个训练集（如批量梯度下降）也不是基于单个实例（如随机梯度下降），而是基于一小部分随机的实例集也就是小批量。相比随机梯度下降，小批量梯度下降的主要优势在于可以从矩阵运算的硬件优化中获得显著的性能提升，特别是需要用到图形处理器时。</p>
-<p>这个算法在参数空间层面的前进过程也不像 SGD$SGD$ 那样不稳定，特别是批量较大时。所以小批量梯度下降最终会比 SGD$SGD$ 更接近最小值一 些。但是另一方面，它可能更难从局部最小值中逃脱（不是我们前面看到的线性回归问题，而是对于那些深受局部最小值陷阱困扰的问题）。图 4-11 显示了三种梯度下降算法在训练过程中参数空间里的行进路线。它们最终都汇聚在最小值附近，批量梯度下降最终停在了最小值上，而随机梯度下降和小批量梯度下降还在继续游走。但是，别忘了批量梯度可是花费了大量时间来计算每一步的，如果用好了学习计划，随机梯度下降和小批量梯度下降也同样能到达最小值。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_08.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_08.jpg"></a></p>
+<h3 id="小批量梯度下降"><a href="#小批量梯度下降" class="headerlink" title="小批量梯度下降"></a>小批量梯度下降</h3><p>我们要了解的最后一个梯度下降算法叫作<strong>小批量梯度下降</strong>。一旦理解了批量梯度下降和随机梯度下降，这个算法就非常容易理解了：每一步的梯度计算，既不是基于整个训练集（如批量梯度下降）也不是基于单个实例（如随机梯度下降），而是基于一小部分随机的实例集也就是小批量。相比随机梯度下降，小批量梯度下降的主要优势在于可以从矩阵运算的硬件优化中获得显著的性能提升，特别是需要用到图形处理器时。</p>
+<p>这个算法在参数空间层面的前进过程也不像 $SGD$ 那样不稳定，特别是批量较大时。所以小批量梯度下降最终会比 $SGD$ 更接近最小值一些。但是另一方面，它可能更难从局部最小值中逃脱（不是我们前面看到的线性回归问题，而是对于那些深受局部最小值陷阱困扰的问题）。图 4-11 显示了三种梯度下降算法在训练过程中参数空间里的行进路线。它们最终都汇聚在最小值附近，批量梯度下降最终停在了最小值上，而随机梯度下降和小批量梯度下降还在继续游走。但是，别忘了批量梯度可是花费了大量时间来计算每一步的，如果用好了学习计划，随机梯度下降和小批量梯度下降也同样能到达最小值。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/GD_08.jpg">
+</center>
+
 <p>最后，我们来比较一下到目前为止所讨论过的线性回归算法 (m$m$ 是训练实例的数量，n$n$ 是特征数量)。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/excel.jpg"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/excel.jpg"></a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/Gradient%20Descent/excel.jpg">
+</center>
+
 <p>_参考_：</p>
 <ul>
 <li><a target="_blank" rel="noopener" href="http://shop.oreilly.com/product/0636920052289.do">Hands-On Machine Learning with Scikit-Learn and TensorFlow</a></li>
 </ul>
-</div><div class="article-licensing box"><div class="licensing-title"><p>机器学习|梯度下降详解</p><p><a href="http://www.laugh12321.cn/blog/2019/03/12/gradient_descent_plus/">http://www.laugh12321.cn/blog/2019/03/12/gradient_descent_plus/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Laugh</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2019-03-12</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2020-10-23</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icon" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/blog/tags/Machine-Learning/">Machine Learning</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/GD/">GD</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/SGD/">SGD</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/MBGD/">MBGD</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/BGD/">BGD</a></div><div class="sharethis-inline-share-buttons"></div><script src="https://platform-api.sharethis.com/js/sharethis.js#property=5f902f1aa809f500123872bf&amp;product=inline-share-buttons" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/alipay-reward-image.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/wechat-reward-image.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/blog/2019/03/26/cnn_overview/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">深度学习|卷积神经网络概述</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/blog/2019/03/09/gradient_descent/"><span class="level-item">译|Gradient Descent in Python</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.css"><script src="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.min.js"></script><script>var gitalk = new Gitalk({
+</div><div class="article-licensing box"><div class="licensing-title"><p>机器学习|梯度下降详解</p><p><a href="http://www.laugh12321.cn/blog/2019/03/12/gradient_descent_plus/">http://www.laugh12321.cn/blog/2019/03/12/gradient_descent_plus/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Laugh</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2019-03-12</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2020-10-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icon" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/blog/tags/Machine-Learning/">Machine Learning</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/GD/">GD</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/SGD/">SGD</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/MBGD/">MBGD</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/BGD/">BGD</a></div><div class="sharethis-inline-share-buttons"></div><script src="https://platform-api.sharethis.com/js/sharethis.js#property=5f902f1aa809f500123872bf&amp;product=inline-share-buttons" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/alipay-reward-image.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/wechat-reward-image.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/blog/2019/03/26/cnn_overview/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">深度学习|卷积神经网络概述</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/blog/2019/03/09/gradient_descent/"><span class="level-item">译|Gradient Descent in Python</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.css"><script src="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.min.js"></script><script>var gitalk = new Gitalk({
             id: "bd4c6dfeffd97cb6e9416b919bf4b369",
             repo: "blog",
             owner: "laugh12321",
