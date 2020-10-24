@@ -1,113 +1,154 @@
 <!doctype html>
-<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="theme-color" content="#123456"><meta name="generator" content="Hexo 4.2.0"><title>深度学习|卷积神经网络概述 - Laugh&#039;s blog</title><link rel="manifest" href="/blog/manifest.json"><meta name="application-name" content="Laugh&#039;s blog"><meta name="msapplication-TileImage" content="https://avatars2.githubusercontent.com/u/38065710?s=400&amp;u=b32cf1cc11129ac10e78dd72a9e3dba0aa0d58bd&amp;v=4"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Laugh&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta description="实现简单手写识别完整代码地址 ：👉 https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;laugh12321&amp;#x2F;Handwriting-Recognition 提到人工智能，人们都会希望自己的智能机器具备「听说读写」这样像人一样的基本感知表达能力，计算机视觉就是研究如何让机器学会「看」的学科。如今，借助深度学习的推动，计算机视觉已经来到了一个飞速发展的时代。人脸识别，自动驾驶，医学图像分析，计算机视觉的成熟让这"><meta property="og:type" content="blog"><meta property="og:title" content="深度学习|卷积神经网络概述"><meta property="og:url" content="http://www.laugh12321.cn/blog/2019/03/26/cnn_overview/"><meta property="og:site_name" content="Laugh&#039;s blog"><meta property="og:description" content="实现简单手写识别完整代码地址 ：👉 https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;laugh12321&amp;#x2F;Handwriting-Recognition 提到人工智能，人们都会希望自己的智能机器具备「听说读写」这样像人一样的基本感知表达能力，计算机视觉就是研究如何让机器学会「看」的学科。如今，借助深度学习的推动，计算机视觉已经来到了一个飞速发展的时代。人脸识别，自动驾驶，医学图像分析，计算机视觉的成熟让这"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/15.jpg"><meta property="article:published_time" content="2019-03-26T00:00:00.000Z"><meta property="article:modified_time" content="2020-10-23T08:46:30.853Z"><meta property="article:author" content="Laugh"><meta property="article:tag" content="Deep Learning"><meta property="article:tag" content="CNN"><meta property="article:tag" content="CV"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/15.jpg"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.laugh12321.cn/blog"},"headline":"Laugh's blog","image":[],"datePublished":"2019-03-26T00:00:00.000Z","dateModified":"2020-10-23T08:46:30.853Z","author":{"@type":"Person","name":"laugh12321"},"description":"实现简单手写识别完整代码地址 ：👉 https:&#x2F;&#x2F;github.com&#x2F;laugh12321&#x2F;Handwriting-Recognition 提到人工智能，人们都会希望自己的智能机器具备「听说读写」这样像人一样的基本感知表达能力，计算机视觉就是研究如何让机器学会「看」的学科。如今，借助深度学习的推动，计算机视觉已经来到了一个飞速发展的时代。人脸识别，自动驾驶，医学图像分析，计算机视觉的成熟让这"}</script><link rel="canonical" href="http://www.laugh12321.cn/blog/2019/03/26/cnn_overview/"><link rel="icon" href="https://avatars2.githubusercontent.com/u/38065710?s=400&amp;u=b32cf1cc11129ac10e78dd72a9e3dba0aa0d58bd&amp;v=4"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.12.0/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/blog/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><script src="https://www.googletagmanager.com/gtag/js?id=UA-180999768-1" async></script><script>window.dataLayer = window.dataLayer || [];
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="theme-color" content="#123456"><meta name="generator" content="Hexo 4.2.0"><title>深度学习|卷积神经网络概述 - Laugh&#039;s blog</title><link rel="manifest" href="/blog/manifest.json"><meta name="application-name" content="Laugh&#039;s blog"><meta name="msapplication-TileImage" content="https://avatars2.githubusercontent.com/u/38065710?s=400&amp;u=b32cf1cc11129ac10e78dd72a9e3dba0aa0d58bd&amp;v=4"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Laugh&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta description="实现简单手写识别完整代码地址：👉laugh12321&amp;#x2F;Handwriting-Recognition 提到人工智能，人们都会希望自己的智能机器具备「听说读写」这样像人一样的基本感知表达能力，计算机视觉就是研究如何让机器学会「看」的学科。如今，借助深度学习的推动，计算机视觉已经来到了一个飞速发展的时代。人脸识别，自动驾驶，医学图像分析，计算机视觉的成熟让这一切变得可能甚至远高于我们人类的工作效率。"><meta property="og:type" content="blog"><meta property="og:title" content="深度学习|卷积神经网络概述"><meta property="og:url" content="http://www.laugh12321.cn/blog/2019/03/26/cnn_overview/"><meta property="og:site_name" content="Laugh&#039;s blog"><meta property="og:description" content="实现简单手写识别完整代码地址：👉laugh12321&amp;#x2F;Handwriting-Recognition 提到人工智能，人们都会希望自己的智能机器具备「听说读写」这样像人一样的基本感知表达能力，计算机视觉就是研究如何让机器学会「看」的学科。如今，借助深度学习的推动，计算机视觉已经来到了一个飞速发展的时代。人脸识别，自动驾驶，医学图像分析，计算机视觉的成熟让这一切变得可能甚至远高于我们人类的工作效率。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/15.jpg"><meta property="article:published_time" content="2019-03-26T00:00:00.000Z"><meta property="article:modified_time" content="2020-10-24T11:06:56.197Z"><meta property="article:author" content="Laugh"><meta property="article:tag" content="Deep Learning"><meta property="article:tag" content="CNN"><meta property="article:tag" content="CV"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/15.jpg"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.laugh12321.cn/blog"},"headline":"Laugh's blog","image":[],"datePublished":"2019-03-26T00:00:00.000Z","dateModified":"2020-10-24T11:06:56.197Z","author":{"@type":"Person","name":"laugh12321"},"description":"实现简单手写识别完整代码地址：👉laugh12321&#x2F;Handwriting-Recognition 提到人工智能，人们都会希望自己的智能机器具备「听说读写」这样像人一样的基本感知表达能力，计算机视觉就是研究如何让机器学会「看」的学科。如今，借助深度学习的推动，计算机视觉已经来到了一个飞速发展的时代。人脸识别，自动驾驶，医学图像分析，计算机视觉的成熟让这一切变得可能甚至远高于我们人类的工作效率。"}</script><link rel="canonical" href="http://www.laugh12321.cn/blog/2019/03/26/cnn_overview/"><link rel="icon" href="https://avatars2.githubusercontent.com/u/38065710?s=400&amp;u=b32cf1cc11129ac10e78dd72a9e3dba0aa0d58bd&amp;v=4"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.12.0/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/blog/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><script src="https://www.googletagmanager.com/gtag/js?id=UA-180999768-1" async></script><script>window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
     
         gtag('config', 'UA-180999768-1');</script><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css"><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><link rel="alternate" href="/blog/atom.xml" title="Laugh's blog" type="application/atom+xml">
-</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/blog/">Laugh</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/blog/">首页</a><a class="navbar-item" href="/blog/archives">归档</a><a class="navbar-item" href="/blog/categories">分类</a><a class="navbar-item" href="/blog/tags">标签</a><a class="navbar-item" href="/blog/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="GitHub" href="https://github.com/laugh12321"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/15.jpg" alt="深度学习|卷积神经网络概述"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2019-03-26T00:00:00.000Z" title="2019-03-26T00:00:00.000Z">2019-03-26</time>发表</span><span class="level-item"><time dateTime="2020-10-23T08:46:30.853Z" title="2020-10-23T08:46:30.853Z">2020-10-23</time>更新</span><span class="level-item"><a class="link-muted" href="/blog/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</a><span> / </span><a class="link-muted" href="/blog/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/">计算机视觉</a><span> / </span><a class="link-muted" href="/blog/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">卷积神经网络</a></span><span class="level-item">1 小时读完 (大约7726个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">深度学习|卷积神经网络概述</h1><div class="content"><p><strong>实现简单手写识别完整代码地址 ：</strong>👉 <a target="_blank" rel="noopener" href="https://github.com/laugh12321/Handwriting-Recognition">https://github.com/laugh12321/Handwriting-Recognition</a></p>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/blog/">Laugh</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/blog/">首页</a><a class="navbar-item" href="/blog/archives">归档</a><a class="navbar-item" href="/blog/categories">分类</a><a class="navbar-item" href="/blog/tags">标签</a><a class="navbar-item" href="/blog/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="GitHub" href="https://github.com/laugh12321"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/photo/15.jpg" alt="深度学习|卷积神经网络概述"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2019-03-26T00:00:00.000Z" title="2019-03-26T00:00:00.000Z">2019-03-26</time>发表</span><span class="level-item"><time dateTime="2020-10-24T11:06:56.197Z" title="2020-10-24T11:06:56.197Z">2020-10-24</time>更新</span><span class="level-item"><a class="link-muted" href="/blog/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</a><span> / </span><a class="link-muted" href="/blog/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/">计算机视觉</a><span> / </span><a class="link-muted" href="/blog/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">卷积神经网络</a></span><span class="level-item">44 分钟读完 (大约6628个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">深度学习|卷积神经网络概述</h1><div class="content"><p><strong>实现简单手写识别完整代码地址：</strong>👉<br><a target="_blank" rel="noopener" href="https://github.com/laugh12321/Handwriting-Recognition">laugh12321/Handwriting-Recognition</a></p>
 <p>提到人工智能，人们都会希望自己的智能机器具备「听说读写」这样像人一样的基本感知表达能力，计算机视觉就是研究如何让机器学会「看」的学科。如今，借助深度学习的推动，计算机视觉已经来到了一个飞速发展的时代。人脸识别，自动驾驶，医学图像分析，计算机视觉的成熟让这一切变得可能甚至远高于我们人类的工作效率。  </p>
 <a id="more"></a>
+
 <p>在计算机视觉领域，卷积神经网络发挥了重要价值。其实它的思想来源很简单，就像神经网络通过模拟生物神经元工作的思路创建，卷积神经网络也在模拟我们的视觉。1959 年，Hubel 和 Wiesel 的实验表明，生物的视觉处理是从简单的形状开始的，比如边缘、直线、曲线。凭借这一发现，Hubel 和 Wiesel 获得了1981 年的诺贝尔生理学或医学奖。卷积神经网络在逐层学习过程中，也模拟着这个过程，第一层学习比较低层的图片结构，第二层学习依据第一层的结果学习高一级的特征，这样最后一层依据前一层学到的高级特征就能完成我们的学习任务。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/2.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/2.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://www.google.com/">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/2.png">
+</center>
+
 <p>比如识别人脸，第一层可能学到了简单的线条，第二层学到了轮廓，倒数第二层学到了双眼皮和耳垂，最后一层识别出了她是你的高中班主任。可以说，卷积神经网络现在主宰了计算机视觉领域，通过灵活运用卷积神经网络的结构，会让我们的机器「看」得更多、更清楚。</p>
 <p>卷积神经网络一般是由卷积层、池化层和全连接层堆叠而成的前馈神经网络结构。与前面讲到的前馈神经网络相似，卷积神经网络同样使用反向传播算法进行训练。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/3.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/3.png"></a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/3.png">
+</center>
+
 <p>上图展示了一个基础的卷积神经网络结构。当然，我们通常使用到的网络结构更深、更复杂，一般是由许多卷积层、池化层和全连接层交叉堆叠而成。</p>
 <p>接下来的实验内容将带你逐步了解卷积层和池化层的概念，并构建一个深度卷积神经网络。</p>
-<h2 id="卷积层-Convolution-Layer"><a href="#卷积层-Convolution-Layer" class="headerlink" title="卷积层 Convolution Layer"></a><a href="#%E5%8D%B7%E7%A7%AF%E5%B1%82-Convolution-Layer" title="卷积层 Convolution Layer"></a>卷积层 Convolution Layer</h2><p>现在我们来逐步深入了解卷积神经网络。首先，你需要了解一张图片在计算机眼中的样子。</p>
+<h2 id="卷积层-Convolution-Layer"><a href="#卷积层-Convolution-Layer" class="headerlink" title="卷积层 Convolution Layer"></a>卷积层 Convolution Layer</h2><p>现在我们来逐步深入了解卷积神经网络。首先，你需要了解一张图片在计算机眼中的样子。</p>
 <p>下图表述了像素矩阵的概念。具体来讲，我们可能看到的是一张图的整体视觉效果，但从计算机中读取图片，图片是通过像素矩阵标识的。每一个像素具有一个数值（0-255），代表图片在该信道像素点位置的大小。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/4.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/4.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://dzone.com/articles/a-beginners-guide-to-understanding-convolutional-n?spm=5176.100239.blogcont231697.12.hWUElB">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/4.png">
+</center>
+
 <p>信道这个概念，大家可以理解为颜色。我们常用的 RGB 信道分别代表红绿蓝三种。通过把三个信道的像素矩阵叠加起来，就可以组成我们看到的色彩斑斓的图片了。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/5.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/5.png"></a></p>
-<p>所以在计算机中，图片是一个 m×n×k$m×n×k$ 的三维矩阵，其中 m$m$ 是矩阵的高度，n$n$ 是矩阵的宽度，k$k$ 是矩阵的深度。基于这样的数据结构，接下来可以进行卷积运算了。</p>
-<h3 id="卷积核-Convolution-Kernel"><a href="#卷积核-Convolution-Kernel" class="headerlink" title="卷积核 Convolution Kernel"></a><a href="#%E5%8D%B7%E7%A7%AF%E6%A0%B8-Convolution-Kernel" title="卷积核 Convolution Kernel"></a>卷积核 Convolution Kernel</h3><p>接下来，我们首先需要了解卷积核的概念。如下图所示，我们现在有一个图像矩阵，同时定义了一个卷积核（权值矩阵）。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/6.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/6.png"></a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/5.png">
+</center>
+
+<p>所以在计算机中，图片是一个 $m×n×k$ 的三维矩阵，其中 $m$ 是矩阵的高度，$n$ 是矩阵的宽度，$k$ 是矩阵的深度。基于这样的数据结构，接下来可以进行卷积运算了。</p>
+<h3 id="卷积核-Convolution-Kernel"><a href="#卷积核-Convolution-Kernel" class="headerlink" title="卷积核 Convolution Kernel"></a>卷积核 Convolution Kernel</h3><p>接下来，我们首先需要了解卷积核的概念。如下图所示，我们现在有一个图像矩阵，同时定义了一个卷积核（权值矩阵）。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/6.png">
+</center>
+
 <p>其中，卷积核的作用就是从输入矩阵（图像）中提取一定的特征。动画如下：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/7.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/7.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://shafeentejani.github.io/2016-12-20/convolutional-neural-nets/">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/7.png">
+</center>
+
 <p>上面的动画过程，其实就是一个卷积的过程，不知你是否能一眼就看明白？</p>
 <p>简单来讲，我们将卷积核沿着图像矩阵的左上角开始移动，不断运算得到右边的矩阵。卷积计算的过程非常简单，就是乘法和加法的运算。例如，当我们第一次把卷积核置于图像矩阵的左上角时：</p>
-<p>1×0+2×1+2×1+1×2=6</p>
-<p>$$1×0+2×1+2×1+1×2=6$$</p>
+<p>$$<br>1 \times 0 + 2 \times 1 + 2 \times 1 + 1 \times 2 = 6<br>$$</p>
 <p>通过不断平移卷积核，同时与输入矩阵进行卷积操作，就可以得到卷积后矩阵。</p>
 <p>如何理解卷积的过程，最简单的就是把卷积核看作是一片滤镜，原矩阵通过滤镜之后就得到了新的特征矩阵。</p>
 <p>如果你想形象一点了解卷积核究竟在做一件什么事情，就可以把卷积后的图片与原图对比呈现。下图就是一张图片通过不同卷积核做卷积操作后的结果，我们可以明显察觉到不同的卷积核可以帮助我们分解出原图片不同层次的特征。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/8.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/8.png"></a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/8.png">
+</center>
+
 <p>所以，如果卷积核能够帮助分解图片特征并运用到机器学习的过程中，例如识别一辆车能看到四个轮子以及车窗的细节，你可以想象这将会对提升准确率有极大帮助。</p>
-<h3 id="卷积步长-Stride"><a href="#卷积步长-Stride" class="headerlink" title="卷积步长 Stride"></a><a href="#%E5%8D%B7%E7%A7%AF%E6%AD%A5%E9%95%BF-Stride" title="卷积步长 Stride"></a>卷积步长 Stride</h3><p>上面的卷积过程相信你已经看明白了。这时候有一个问题，如果我们在对图片卷积时都依次移动，效率会不会比较低？</p>
+<h3 id="卷积步长-Stride"><a href="#卷积步长-Stride" class="headerlink" title="卷积步长 Stride"></a>卷积步长 Stride</h3><p>上面的卷积过程相信你已经看明白了。这时候有一个问题，如果我们在对图片卷积时都依次移动，效率会不会比较低？</p>
 <p>是的，对于一些很大的图片，每次只移动一步运算效率会很低下，同时分解得到的特征也很容易冗余。于是，可以引入一个超参数能对每一次移动的步数进行调节，我们把它称之为卷积步长 Stride。</p>
 <p>同样，我们通过一组动图来查看不同卷积步长 Stride 的移动效果：</p>
 <p>当卷积步长为 <code>1</code> 时，也就是和上面相同的移动过程：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/9.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/9.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/vdumoulin/conv_arithmetic">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/9.png">
+</center>
+
 <p>此时，输出矩阵大小为：</p>
-<p>output=(input−kernel)+1</p>
-<p>$$output=(input−kernel)+1$$</p>
+<p>$$<br>output = (input - kernel) + 1<br>$$</p>
 <p>如果我们将卷积步长设为 <code>2</code>，就是下面的效果：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/10.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/10.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/vdumoulin/conv_arithmetic">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/10.png">
+</center>
+
 <p>可以发现，当 <code>Stride=2</code> 横向移动以及纵向移动时，每一步都跳过了一个单元格。也就是从移动 <code>1</code> 步变成了 <code>2</code> 步。</p>
 <p>此时，输出矩阵大小为（向下取整）：</p>
-<p>output=⌊input−kernelstride⌋+1</p>
-<p>$$output=⌊input−kernelstride⌋+1$$</p>
-<h3 id="边距扩展-Padding"><a href="#边距扩展-Padding" class="headerlink" title="边距扩展 Padding"></a><a href="#%E8%BE%B9%E8%B7%9D%E6%89%A9%E5%B1%95-Padding" title="边距扩展 Padding"></a>边距扩展 Padding</h3><p>介绍了步长的概念，接下来再介绍一个卷积操作过程中的重要概念，也就是 Padding。Padding 也就是边距，当然我们一般都直接使用英文。步长解决了卷积效率低的问题，但又造成了新的问题。你会发现，随着步长的增大，卷积输出的矩阵将持续变小。但是，在构建网络的时候我们往往希望输出矩阵的大小为指定大小，而不完全由卷积步长的变换而左右。于是，就有了 Padding 的操作。</p>
+<p>$$<br>output = \lfloor \frac{input - kernel}{stride} \rfloor + 1<br>$$</p>
+<h3 id="边距扩展-Padding"><a href="#边距扩展-Padding" class="headerlink" title="边距扩展 Padding"></a>边距扩展 Padding</h3><p>介绍了步长的概念，接下来再介绍一个卷积操作过程中的重要概念，也就是 Padding。Padding 也就是边距，当然我们一般都直接使用英文。步长解决了卷积效率低的问题，但又造成了新的问题。你会发现，随着步长的增大，卷积输出的矩阵将持续变小。但是，在构建网络的时候我们往往希望输出矩阵的大小为指定大小，而不完全由卷积步长的变换而左右。于是，就有了 Padding 的操作。</p>
 <p>一旦我们确定了原矩阵的大小和步长的大小，得到的卷积矩阵大小将是确定的。假如我们希望卷积得到的矩阵大小变大，在不改变卷积核大小和步长的前提下，唯一的方法就是调整原矩阵的大小。于是，我们就通过对原矩阵进行 Padding 操作（扩大边距）达到目的。</p>
 <p>Padding 比较常见的操作是在输入矩阵最外围补上一圈 <code>0</code> 之后，再参与卷积运算。这样，我们就可以自行控制输出矩阵的大小。下面列举几个常见的 Padding 方式：</p>
-<p>Arbitrary Padding 在输入图像周围填充 <code>0</code>，使输出矩阵尺寸大于输入尺寸。例如，下图对 5×5$5×5$ 的输入矩阵外围补上 2 圈 <code>0</code> 后，与 4×4$4×4$ 的卷积核做卷积运算，最终得到 6×6$6×6$ 的输出矩阵的过程。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/11.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/11.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/vdumoulin/conv_arithmetic">©️ 图片来源</a></p>
+<p>Arbitrary Padding 在输入图像周围填充 <code>0</code>，使输出矩阵尺寸大于输入尺寸。例如，下图对 $5×5$ 的输入矩阵外围补上 2 圈 <code>0</code> 后，与 $4×4$ 的卷积核做卷积运算，最终得到 $6×6$ 的输出矩阵的过程。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/11.png">
+</center>
+
 <p>此时，输出矩阵大小为：</p>
-<p>output=(input−kernel)+2∗padding+1</p>
-<p>$$output=(input−kernel)+2∗padding+1$$</p>
-<p>Half Padding 也叫 Same Padding，它希望得到的输出矩阵尺寸与输入尺寸一致。下图即为我们对 5×5$5×5$ 的输入矩阵外围补上一圈 <code>0</code> 后，与 3×3$3×3$ 的卷积核做卷积运算，最终依然得到 5×5$5×5$ 的输出矩阵的过程。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/12.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/12.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/vdumoulin/conv_arithmetic">©️ 图片来源</a></p>
+<p>$$<br>output = (input - kernel) + 2 * padding + 1<br>$$</p>
+<p>Half Padding 也叫 Same Padding，它希望得到的输出矩阵尺寸与输入尺寸一致。下图即为我们对 $5×5$ 的输入矩阵外围补上一圈 <code>0</code> 后，与 $3×3$ 的卷积核做卷积运算，最终依然得到 $5×5$ 的输出矩阵的过程。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/12.png">
+</center>
+
 <p>还有一种是 Full Padding，卷积核从输入矩阵左角第一个方块开始，依次移动到右下角的最后一个方块。</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/13.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/13.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/vdumoulin/conv_arithmetic">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/13.png">
+</center>
+
 <p>其实，Padding 并不是说只有这几种，还有其他的一些形式，包括 Padding 和 Stride 结合在一起的一些卷积形式，甚至你可以自定义 Padding 和 Stride 的规则，这里也就不再一一介绍了。</p>
-<h3 id="高维多卷积核过程"><a href="#高维多卷积核过程" class="headerlink" title="高维多卷积核过程"></a><a href="#%E9%AB%98%E7%BB%B4%E5%A4%9A%E5%8D%B7%E7%A7%AF%E6%A0%B8%E8%BF%87%E7%A8%8B" title="高维多卷积核过程"></a>高维多卷积核过程</h3><p>前面，我们已经介绍了矩阵通过单个卷积核的过程，相信你已经对卷积核、步长、Padding 等概念非常熟悉了。</p>
+<h3 id="高维多卷积核过程"><a href="#高维多卷积核过程" class="headerlink" title="高维多卷积核过程"></a>高维多卷积核过程</h3><p>前面，我们已经介绍了矩阵通过单个卷积核的过程，相信你已经对卷积核、步长、Padding 等概念非常熟悉了。</p>
 <p>一张黑白图片形成了单个像素矩阵，但如果是一张用 RGB 通道的彩色图片，将会形成 3 维的像素矩阵。这该怎么办呢？</p>
-<p>对于一个 m×n×k$m×n×k$ 的三维矩阵，它是如何在这种二维结构的卷积下操作的呢？其实，在卷积神经网络设计上有一个重要原则，就是卷积核也是一个三维 a×b×k$a×b×k$ 的矩阵(通常 a=b$a=b$，且常取 <code>1，3，5，7</code> 这样的数)。更重要的是，一定要保证输入矩阵大小与卷积核大小在第三个维度上值相等。</p>
-<p>这样，我们在第三个维度上对相同深度的输入矩阵与卷积核做如上的卷积运算时，最后叠加所有深度的值得到一个二维的输出矩阵。也就是说，对 m×n×k$m×n×k$ 的输入矩阵与 a×b×k$a×b×k$ 的卷积核，我们如果做一个 stride=s$stride=s$，padding=p$padding=p$ 的卷积操作，那么将会得到一个 [(m+2p−a)/s+1]×[(n+2p−a)/s+1]$[(m+2p−a)/s+1]×[(n+2p−a)/s+1]$ 的二维矩阵。</p>
-<p>那么如何保证输出矩阵依然是一个三维矩阵呢？其实，只需要每一层都由多个卷积核来实现操作就行了，最后把得到的所有二维矩阵叠起来，就得到了一个 [(m+2p−a)/s+1]×[(n+2p−a)/s+1]×c$[(m+2p−a)/s+1]×[(n+2p−a)/s+1]×c$，c$c$ 为卷积核的个数的输出矩阵。</p>
-<p>整个过程可以由下图更直观地表示，一个 5×5×3$5×5×3$ 的输入矩阵被两个 3×3×3$3×3×3$ 的卷积核执行 stride=2$stride=2$，padding=1$padding=1$ 卷积后，得到了 3×3×2$3×3×2$ 的输出矩阵：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/14.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/14.png"></a></p>
-<p><a target="_blank" rel="noopener" href="http://cs231n.github.io/convolutional-networks/">©️ 图片来源</a></p>
+<p>对于一个 $m×n×k$ 的三维矩阵，它是如何在这种二维结构的卷积下操作的呢？其实，在卷积神经网络设计上有一个重要原则，就是卷积核也是一个三维 $a×b×k$ 的矩阵(通常 $a=b$，且常取 <code>1，3，5，7</code> 这样的数)。更重要的是，一定要保证输入矩阵大小与卷积核大小在第三个维度上值相等。</p>
+<p>这样，我们在第三个维度上对相同深度的输入矩阵与卷积核做如上的卷积运算时，最后叠加所有深度的值得到一个二维的输出矩阵。也就是说，对 $m×n×k$ 的输入矩阵与 $a×b×k$ 的卷积核，我们如果做一个 $stride==s$，$padding=p$ 的卷积操作，那么将会得到一个 $[(m+2p-a)/s+1]\times [(n+2p-a)/s+1]$ 的二维矩阵。</p>
+<p>那么如何保证输出矩阵依然是一个三维矩阵呢？其实，只需要每一层都由多个卷积核来实现操作就行了，最后把得到的所有二维矩阵叠起来，就得到了一个 $[(m+2p-a)/s+1]\times [(n+2p-a)/s+1]\times c$，$c$ 为卷积核的个数的输出矩阵。</p>
+<p>整个过程可以由下图更直观地表示，一个 $5×5×3$ 的输入矩阵被两个 $3×3×3$ 的卷积核执行 $stride=2$，$padding=1$ 卷积后，得到了 $3×3×2$ 的输出矩阵：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/14.png">
+</center>
+
 <p>以上就是一个高维矩阵通过多卷积核的执行过程。</p>
-<h2 id="池化层-Pooling-Layer"><a href="#池化层-Pooling-Layer" class="headerlink" title="池化层 Pooling Layer"></a><a href="#%E6%B1%A0%E5%8C%96%E5%B1%82-Pooling-Layer" title="池化层 Pooling Layer"></a>池化层 Pooling Layer</h2><p>上面介绍了卷积层，接着介绍卷积神经网络中另一个非常重要的层，也就是池化层。池化操作其实就是降采样操作过程。我们都知道，图片是一个非常大的训练数据，所以想达到很好的训练性能，只有卷积层是不够的。池化层通过降采样的方式，在不影响图像质量的情况下，压缩图片，达到减少训练参数的目的。</p>
+<h2 id="池化层-Pooling-Layer"><a href="#池化层-Pooling-Layer" class="headerlink" title="池化层 Pooling Layer"></a>池化层 Pooling Layer</h2><p>上面介绍了卷积层，接着介绍卷积神经网络中另一个非常重要的层，也就是池化层。池化操作其实就是降采样操作过程。我们都知道，图片是一个非常大的训练数据，所以想达到很好的训练性能，只有卷积层是不够的。池化层通过降采样的方式，在不影响图像质量的情况下，压缩图片，达到减少训练参数的目的。</p>
 <p>需要注意的是，往往在几个卷积层之后我们就会引入池化层，池化层没有需要学习的参数，且池化层在每一个深度上独立完成，就是说池化后图像的纵深保持不变。下面介绍两种常用的池化方式。</p>
-<h3 id="最大值池化"><a href="#最大值池化" class="headerlink" title="最大值池化"></a><a href="#%E6%9C%80%E5%A4%A7%E5%80%BC%E6%B1%A0%E5%8C%96" title="最大值池化"></a>最大值池化</h3><p>对于池化操作，我们需要界定一个过滤器和步长。最大值池化，取输入矩阵在过滤器大小上矩阵块的最大值作为输出矩阵对应位置输出。如下图：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/18.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/18.png"></a></p>
-<h3 id="平均值池化"><a href="#平均值池化" class="headerlink" title="平均值池化"></a><a href="#%E5%B9%B3%E5%9D%87%E5%80%BC%E6%B1%A0%E5%8C%96" title="平均值池化"></a>平均值池化</h3><p>除了最大值池化，另一个常用的池化方法是平均值池化。顾名思义，这是取输入矩阵在过滤器大小上矩阵块的平均值作为输出矩阵对应位置输出。如下图：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/19.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/19.png"></a></p>
+<h3 id="最大值池化"><a href="#最大值池化" class="headerlink" title="最大值池化"></a>最大值池化</h3><p>对于池化操作，我们需要界定一个过滤器和步长。最大值池化，取输入矩阵在过滤器大小上矩阵块的最大值作为输出矩阵对应位置输出。如下图：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/18.png">
+</center>
+
+<h3 id="平均值池化"><a href="#平均值池化" class="headerlink" title="平均值池化"></a>平均值池化</h3><p>除了最大值池化，另一个常用的池化方法是平均值池化。顾名思义，这是取输入矩阵在过滤器大小上矩阵块的平均值作为输出矩阵对应位置输出。如下图：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/19.png">
+</center>
+
 <p>相比于卷积，池化的过程就更加简单了。相信你通过上面的示意图能很清楚的看出最大池化和平均池化的过程。</p>
-<p><strong>CNN 实现数字手写识别的完整代码可以在我的 GitHub 上查看 ：</strong> 👉 <a target="_blank" rel="noopener" href="https://github.com/laugh12321/Handwriting-Recognition/blob/master/CNN_TF.ipynb">https://github.com/laugh12321/Handwriting-Recognition/blob/master/CNN_TF.ipynb</a></p>
-<h2 id="经典的卷积神经网络"><a href="#经典的卷积神经网络" class="headerlink" title="经典的卷积神经网络"></a><a href="#%E7%BB%8F%E5%85%B8%E7%9A%84%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C" title="经典的卷积神经网络"></a>经典的卷积神经网络</h2><p>深度学习领域有很多的技巧需要大量的探索与实践。比如对于一个人脸识别任务，我们搭建的网络具有很强的多样性。大量数据集和多次实验结果下，有些经典的神经网络孕育而生。这些网络从诞生时到现在都有着独特的优越性能和革命性的创新思想。所以，建议大家在深度学习的领域学习中，熟悉这些经典神经网络的架构，这将进一步深化我们对深度神经网络的理解。</p>
+<p><strong>CNN 实现数字手写识别的完整代码可以在我的 GitHub 上查看：</strong> 👉 <a target="_blank" rel="noopener" href="https://github.com/laugh12321/Handwriting-Recognition/blob/master/CNN_TF.ipynb">laugh12321/Handwriting-Recognition</a></p>
+<h2 id="经典的卷积神经网络"><a href="#经典的卷积神经网络" class="headerlink" title="经典的卷积神经网络"></a>经典的卷积神经网络</h2><p>深度学习领域有很多的技巧需要大量的探索与实践。比如对于一个人脸识别任务，我们搭建的网络具有很强的多样性。大量数据集和多次实验结果下，有些经典的神经网络孕育而生。这些网络从诞生时到现在都有着独特的优越性能和革命性的创新思想。所以，建议大家在深度学习的领域学习中，熟悉这些经典神经网络的架构，这将进一步深化我们对深度神经网络的理解。</p>
 <p>实际上，在对神经网络的理论探索中，尚不具有十分充分的理论证明为什么一些经典网络有如此强大的性能。当然，深度学习还有很多未得到解释的地方，包括神经网络每一步究竟在学习什么，每个参数是如何影响学习性能或者迭代收敛过程，这些问题都有待进一步探寻。所以说，深度神经网络的调参过程充满了「玄学」的感觉，这需要大量的实践积累。</p>
-<h3 id="LeNet-神经网络"><a href="#LeNet-神经网络" class="headerlink" title="LeNet 神经网络"></a><a href="#LeNet-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C" title="LeNet 神经网络"></a>LeNet 神经网络</h3><p>LeNet-5 是一个很早的经典卷积神经网络。Yann LeCun 大牛（被称作卷积神经网络之父）在 1998 年搭建了 LeNet，并且在手写识别网络(MNIST)上广泛使用。LeNet 神经网络的架构如下图：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/21.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/21.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://indoml.com/2018/03/07/student-notes-convolutional-neural-networks-cnn-introduction/">©️ 图片来源</a></p>
+<h3 id="LeNet-神经网络"><a href="#LeNet-神经网络" class="headerlink" title="LeNet 神经网络"></a>LeNet 神经网络</h3><p>LeNet-5 是一个很早的经典卷积神经网络。Yann LeCun 大牛（被称作卷积神经网络之父）在 1998 年搭建了 LeNet，并且在手写识别网络(MNIST)上广泛使用。LeNet 神经网络的架构如下图：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/21.png">
+</center>
+
 <p>其中，网络中的下采样采用了平均值池化。前面各层都由 tanh 激活，最后一层由 RBF 激活。经过测试，LeNet 在 6 万张原始图片的数据集中，错误率能降低到 0.95%。</p>
 <p>LeNet 一经发布就带来了一波卷积神经网络潮流。很可惜，由于那个年代计算能力不强，使得卷积神经网络的多样性受到严重限制，研究者都不愿意将网络深化，卷积神经网络只掀起了一波热潮后又几乎无人问津。</p>
-<h3 id="AlexNet-神经网络"><a href="#AlexNet-神经网络" class="headerlink" title="AlexNet 神经网络"></a><a href="#AlexNet-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C" title="AlexNet 神经网络"></a>AlexNet 神经网络</h3><p>2012 年 ImageNet 比赛上，一个卷积神经网络的表现力大放异彩，这就是 AlexNet。经过了十几年的硬件发展，计算机运算能力大幅增强，我们可运用的数据也大幅增加，AlexNet 由此孕育而生。</p>
+<h3 id="AlexNet-神经网络"><a href="#AlexNet-神经网络" class="headerlink" title="AlexNet 神经网络"></a>AlexNet 神经网络</h3><p>2012 年 ImageNet 比赛上，一个卷积神经网络的表现力大放异彩，这就是 AlexNet。经过了十几年的硬件发展，计算机运算能力大幅增强，我们可运用的数据也大幅增加，AlexNet 由此孕育而生。</p>
 <p>AlexNet 的结构很像 LeNet-5，但是网络变得更大更深。同时，AlexNet 是第一个将卷积层叠层后再叠上池化层的网络。不仅如此，AlexNet 运用上 Dropout（训练时，按照一定的概率将神经元暂时从网络中丢弃）和数据增强两种方法降低过拟合，以及 LRN(local responce normalization) 做为规划层来促使神经元学到更加广泛的特征。可以说，AlexNet 的出色表现，让计算机视觉领域开始逐渐由卷积神经网络主宰。</p>
 <p>下面就是 AlexNet 的网络结构图：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/22.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/22.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://indoml.com/2018/03/07/student-notes-convolutional-neural-networks-cnn-introduction/">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/22.png">
+</center>
+
 <p>原作者在训练 AlexNet 时，一个 GPU 负责图中顶层部分，一个 GPU 运行图中底层部分，GPU 之间仅在某些层互相通信。5 个卷积层，5 个池化层，3 个全连接层，大约 5000 万个可调参数组成了这个经典的卷积神经网络。最后的全连接层输出到 1000 维的 softmax 层，产生一个覆盖 1000 类标记的分布。最终完成了对 ImageNet 的分类任务。</p>
-<p><strong>模仿 AlexNet 搭建一个卷积神经网络用于手写识别网络的完整代码可以在我的 GitHub 上查看 ：</strong> 👉 <a target="_blank" rel="noopener" href="https://github.com/laugh12321/Handwriting-Recognition/blob/master/AlexNet_TF.ipynb">https://github.com/laugh12321/Handwriting-Recognition/blob/master/AlexNet_TF.ipynb</a></p>
-<h3 id="VGG-神经网络"><a href="#VGG-神经网络" class="headerlink" title="VGG 神经网络"></a><a href="#VGG-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C" title="VGG 神经网络"></a>VGG 神经网络</h3><p>VGG Net 可以看成是 Alex Net 的加深版本，同样运用 Alex Net 所带来的思路。VGG Net 拥有 5 个卷积组，2 层全图像连接特征和 1 层全连接分类特征。另外，Alex Net 只有 8 层，但是 VGG Net 通常有 16 到 19 层。</p>
+<p><strong>模仿 AlexNet 搭建一个卷积神经网络用于手写识别网络的完整代码可以在我的 GitHub 上查看：</strong> 👉<br><a target="_blank" rel="noopener" href="https://github.com/laugh12321/Handwriting-Recognition/blob/master/AlexNet_TF.ipynb">laugh12321/Handwriting-Recognition</a></p>
+<h3 id="VGG-神经网络"><a href="#VGG-神经网络" class="headerlink" title="VGG 神经网络"></a>VGG 神经网络</h3><p>VGG Net 可以看成是 Alex Net 的加深版本，同样运用 Alex Net 所带来的思路。VGG Net 拥有 5 个卷积组，2 层全图像连接特征和 1 层全连接分类特征。另外，Alex Net 只有 8 层，但是 VGG Net 通常有 16 到 19 层。</p>
 <p>VGG Net 的革命性在于，它在论文中给出了不同的卷积层配置方法，而且从论文实验结果可以看出，随着卷积层从 8 到 16 一步步加深，通过加深卷积层数准确率已经达到了瓶颈数值。这项研究表明了单纯添加卷积层往往并不能起到更好的效果，这将促使以后的卷积神经网络朝向增强卷积层功能的思路发展。</p>
 <p>下图描述了一种配置的 VGG 网络结构：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/24.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/24.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://indoml.com/2018/03/07/student-notes-convolutional-neural-networks-cnn-introduction/">©️ 图片来源</a></p>
-<h3 id="Google-Net-神经网络"><a href="#Google-Net-神经网络" class="headerlink" title="Google Net 神经网络"></a><a href="#Google-Net-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C" title="Google Net 神经网络"></a>Google Net 神经网络</h3><p>自 VGG Net 之后，卷积神经网络朝向另一个方向演化，那就是增强卷积模块的功能。</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/24.png">
+</center>
+
+<h3 id="Google-Net-神经网络"><a href="#Google-Net-神经网络" class="headerlink" title="Google Net 神经网络"></a>Google Net 神经网络</h3><p>自 VGG Net 之后，卷积神经网络朝向另一个方向演化，那就是增强卷积模块的功能。</p>
 <p>谷歌公司提出的 Google Net 可以说带来了革命性的成果。虽然乍一看好像是因为它将网络变深了，实际上是其中的一个小模块的设计技巧加强了所有卷积层的学习性能。谷歌公司把它称作 Inception，灵感来源于当时同时期的电影 Inception（盗梦空间）。Inception 模块如下图所示：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/25.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/25.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://indoml.com/2018/03/07/student-notes-convolutional-neural-networks-cnn-introduction/">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/25.png">
+</center>
+
 <p>这个多层感知卷积层的引入，来源于一个很直观的思想，就是一个卷积网络里面的局部稀疏最优结构往往可以由简单可复用的密集组合来近似或者替代。就像上图里面 <code>1x1, 3x3, 5x5</code> 的卷积层，与 <code>3x3</code> 的池化层的组合一个 <code>Inception</code>。这样做是出于以下几点考虑：</p>
 <ol>
 <li>不同尺寸的卷积核可以提取不同尺度的信息。</li>
@@ -115,14 +156,18 @@
 <li>由于池化层在 CNN 网络里面的成功运用，也把池化层当做组合的一部分，在 GoogleNet 论文里也说明了它的有效性。</li>
 </ol>
 <p>由于 Google Net 是好几个 Inception 模块的堆叠，而且往往越后面的 Inception 模块能够提取到更加高级抽象的特征。</p>
-<p>前一层经过 1×1$1×1$ 或者池化层降维后，在全连接层过滤器将 1×1$1×1$, 3×3$3×3$, 5×5$5×5$ 的卷积结果连接起来，使网络的深度和宽度均可以扩大。论文显示，Inception 模块使整个网络的训练过程有 2 到 3 倍的加速，且更容易捕捉到关键特征用以学习。同时，由于网络很深，为了避免梯度消失的问题，Google Net 还巧妙地在不同深度增加了两个损失函数来训练。</p>
+<p>前一层经过 $1×1$ 或者池化层降维后，在全连接层过滤器将 $1×1$, $3×3$, $5×5$ 的卷积结果连接起来，使网络的深度和宽度均可以扩大。论文显示，Inception 模块使整个网络的训练过程有 2 到 3 倍的加速，且更容易捕捉到关键特征用以学习。同时，由于网络很深，为了避免梯度消失的问题，Google Net 还巧妙地在不同深度增加了两个损失函数来训练。</p>
 <p>整个 Google Net 结构如下图：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/26.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/26.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://indoml.com/2018/03/07/student-notes-convolutional-neural-networks-cnn-introduction/">©️ 图片来源</a></p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/26.png">
+</center>
+
 <p>可以看出 Google Net 已经是非常深的网络了，你可以通过新标签页打开图片查看细节。Google Net 所依赖的训练时间与运算成本都上了一个台阶，Inception 这个创意性的设计，极大地优化了卷积神经网络的学习过程。</p>
-<h3 id="ResNet-神经网络"><a href="#ResNet-神经网络" class="headerlink" title="ResNet 神经网络"></a><a href="#ResNet-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C" title="ResNet 神经网络"></a>ResNet 神经网络</h3><p>如果把网络加深和增强卷积模块功能两个演化方向相结合，就形成了 ResNet。2015 年何明凯团队发布的 ResNet 可以说影响了整个深度学习界。首先让我们看看这个网络有多么震撼：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/27.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/27.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://indoml.com/2018/03/07/student-notes-convolutional-neural-networks-cnn-introduction/">©️ 图片来源</a></p>
+<h3 id="ResNet-神经网络"><a href="#ResNet-神经网络" class="headerlink" title="ResNet 神经网络"></a>ResNet 神经网络</h3><p>如果把网络加深和增强卷积模块功能两个演化方向相结合，就形成了 ResNet。2015 年何明凯团队发布的 ResNet 可以说影响了整个深度学习界。首先让我们看看这个网络有多么震撼：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/27.png">
+</center>
+
 <p>ResNet 的训练深度达到了 152 层，上图（最右）仅是一个迷你型的 34 层 ResNet 结构。左图是 VGG-19，中间是不具备 Residual 结构的深度神经网络。</p>
 <p>可以很明显的看出，ResNet 将部分网络进行了一个跳层传递的操作。网络在深化的过程中，可能会出现一种叫网络退化的问题，ResNet 通过引入这个跳层传递，将前面某层的结果与这一层的卷积结果相加，去优化一个残差来规避这些问题。</p>
 <p>ResNet 将我们的网络深度倍数化增加，从最多 20 层一下子拉到了 100 层以上，而且网络也不再是平常的层数堆叠，最终模型预测准确率已经达到了一个巨大的量变提高。</p>
@@ -130,22 +175,27 @@
 <ul>
 <li>Deep Residual Learning for Image Recognition: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1512.03385">arXiv:1512.03385</a></li>
 </ul>
-<h3 id="卷积神经网络的发展史"><a href="#卷积神经网络的发展史" class="headerlink" title="卷积神经网络的发展史"></a><a href="#%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%9A%84%E5%8F%91%E5%B1%95%E5%8F%B2" title="卷积神经网络的发展史"></a>卷积神经网络的发展史</h3><p>最后，我们通过一张图来总结卷积神经网络的发展史：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/28.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/28.png"></a></p>
-<h2 id="为什么要使用卷积神经网络？"><a href="#为什么要使用卷积神经网络？" class="headerlink" title="为什么要使用卷积神经网络？"></a><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E4%BD%BF%E7%94%A8%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%EF%BC%9F" title="为什么要使用卷积神经网络？"></a>为什么要使用卷积神经网络？</h2><p>这是一个很关键的问题，大家肯定也有这样的疑问。之前我们的神经网络像全连接网络这样，让每个神经元互相连接然后激活，已经可以达到不错的学习效果，也可以拟合去学习各种复杂的过程。</p>
+<h3 id="卷积神经网络的发展史"><a href="#卷积神经网络的发展史" class="headerlink" title="卷积神经网络的发展史"></a>卷积神经网络的发展史</h3><p>最后，我们通过一张图来总结卷积神经网络的发展史：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/28.png">
+</center>
+
+<h2 id="为什么要使用卷积神经网络？"><a href="#为什么要使用卷积神经网络？" class="headerlink" title="为什么要使用卷积神经网络？"></a>为什么要使用卷积神经网络？</h2><p>这是一个很关键的问题，大家肯定也有这样的疑问。之前我们的神经网络像全连接网络这样，让每个神经元互相连接然后激活，已经可以达到不错的学习效果，也可以拟合去学习各种复杂的过程。</p>
 <p>那么，经过以上对卷积神经网络的深入了解后，你能否简要回答这个问题呢？</p>
 <p>形象地来讲，卷积神经网络保留了图像的空间信息。</p>
 <p>19 世纪 60 年代，科学家通过对猫的视觉皮层细胞研究发现，每一个视觉神经元只会处理一小块区域的视觉图像，即感受野。我们也看到在卷积神经网络中，一个卷积层可以有多个不同的卷积核（权值），而每个卷积核在输入图像上滑动且每次只处理一小块图像。</p>
 <p>这样，输入端的卷积层可以提取到图像中最基础的特征，比如不同方向的直线或者拐角；接着再组合成高阶特征，比如三角形、正方形等；再继续抽象组合，得到眼睛、鼻子和嘴等五官；最后再将五官组合成一张脸，完成匹配识别。过程中，每个卷积层提取的特征，在后面的层中都会抽象组合成更高阶的特征，最终习得足够多足够关键的特征，完成学习任务。</p>
 <p>从运算上讲，卷积层具有两个关键优势，分别是局部连接和权值共享。</p>
 <p>每个神经元只与上一层的一个局部区域连接，该连接的空间大小可视为神经网络神经元的感受野。权值共享的意义在于，当前层在深度方向上每层神经元都使用同样的权重和偏差。</p>
-<p>这里作了一个合理的假设：如果一个特征在计算某个空间位置 (x,y)$(x,y)$ 的时候有用，那么它在计算另一个不同位置 (x2,y2)$(x2,y2)$ 的时候也有用。我们将局部连接和权值共享结合，就降低了参数量，使训练复杂度大大下降。这样的操作还能减轻过拟合，权值共享同时还赋予了卷积网络对平移的容忍性。</p>
-<p>试想，如果我们用全连接神经网络来做图像识别任务，图片是由像素点组成的，用矩阵表示的，28×28$28×28$ 的矩阵，我们得把它「拍平」后，变成一个 784$784$ 的一列向量。如果该列向量和隐含层的 15$15$ 个神经元连接，就有 784×15=11760$784×15=11760$ 个权重 w$w$。如果，隐含层和最后的输出层的 10$10$ 个神经元连接，就有 11760×10=117600$11760×10=117600$ 个权重 w$w$ 。最后，再加上隐含层的偏置项 15$15$ 个和输出层的偏置项 10$10$ 个，就得到了 117625$117625$ 个参数。这是多么恐怖。</p>
-<p>下图表示一个三层全连接网络的结构，输入为图片即 784$784$ 个神经元，隐藏层 15$15$ 个神经元，输出层 10$10$ 个神经元：</p>
-<p><a target="_blank" rel="noopener" href="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/29.png"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/29.png"></a></p>
-<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Artificial_neural_network">©️ 图片来源</a></p>
-<p>那么，试想我们如果用卷积神经网络来解决。卷积层里，我们只需要学习卷积核（权值），就像前面搭建的卷积神经网络中，第一个卷积层只需要学习 3×3×1×8=72$3×3×1×8=72$ 个参数，第二层学习 3×3×8×10=720$3×3×8×10=720$ 个参数，池化层不需要学习任何参数，全连接层参数也大幅下降。这样算下来，所需要学习的参数相比上面的三层全连接层已经大幅减少。这就是卷积神经网络的好处。</p>
-</div><div class="article-licensing box"><div class="licensing-title"><p>深度学习|卷积神经网络概述</p><p><a href="http://www.laugh12321.cn/blog/2019/03/26/cnn_overview/">http://www.laugh12321.cn/blog/2019/03/26/cnn_overview/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Laugh</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2019-03-26</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2020-10-23</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icon" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/blog/tags/Deep-Learning/">Deep Learning</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/CNN/">CNN</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/CV/">CV</a></div><div class="sharethis-inline-share-buttons"></div><script src="https://platform-api.sharethis.com/js/sharethis.js#property=5f902f1aa809f500123872bf&amp;product=inline-share-buttons" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/alipay-reward-image.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/wechat-reward-image.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/blog/2019/04/09/mf_techniques_for_rs/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">推荐系统|矩阵分解概述</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/blog/2019/03/12/gradient_descent_plus/"><span class="level-item">机器学习|梯度下降详解</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.css"><script src="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.min.js"></script><script>var gitalk = new Gitalk({
+<p>这里作了一个合理的假设：如果一个特征在计算某个空间位置 $(x,y)$ 的时候有用，那么它在计算另一个不同位置 $(x2,y2)$ 的时候也有用。我们将局部连接和权值共享结合，就降低了参数量，使训练复杂度大大下降。这样的操作还能减轻过拟合，权值共享同时还赋予了卷积网络对平移的容忍性。</p>
+<p>试想，如果我们用全连接神经网络来做图像识别任务，图片是由像素点组成的，用矩阵表示的，$28×28$ 的矩阵，我们得把它「拍平」后，变成一个 $784$ 的一列向量。如果该列向量和隐含层的 $15$ 个神经元连接，就有 $784×15=11760$ 个权重 $w$。如果，隐含层和最后的输出层的 $10$ 个神经元连接，就有 $11760×10=117600$ 个权重 $w$ 。最后，再加上隐含层的偏置项 $15$ 个和输出层的偏置项 $10$ 个，就得到了 $117625$ 个参数。这是多么恐怖。</p>
+<p>下图表示一个三层全连接网络的结构，输入为图片即 $784$ 个神经元，隐藏层 $15$ 个神经元，输出层 $10$ 个神经元：</p>
+<center>
+<img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh's%20blog/images/CNN/29.png">
+</center>
+
+<p>那么，试想我们如果用卷积神经网络来解决。卷积层里，我们只需要学习卷积核（权值），就像前面搭建的卷积神经网络中，第一个卷积层只需要学习 $3×3×1×8=72$ 个参数，第二层学习 $3×3×8×10=720$ 个参数，池化层不需要学习任何参数，全连接层参数也大幅下降。这样算下来，所需要学习的参数相比上面的三层全连接层已经大幅减少。这就是卷积神经网络的好处。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>深度学习|卷积神经网络概述</p><p><a href="http://www.laugh12321.cn/blog/2019/03/26/cnn_overview/">http://www.laugh12321.cn/blog/2019/03/26/cnn_overview/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Laugh</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2019-03-26</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2020-10-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icon" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/blog/tags/Deep-Learning/">Deep Learning</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/CNN/">CNN</a><a class="link-muted mr-2" rel="tag" href="/blog/tags/CV/">CV</a></div><div class="sharethis-inline-share-buttons"></div><script src="https://platform-api.sharethis.com/js/sharethis.js#property=5f902f1aa809f500123872bf&amp;product=inline-share-buttons" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/alipay-reward-image.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="https://laugh12321-1258080753.cos.ap-chengdu.myqcloud.com/laugh&#039;s%20blog/images/reward/wechat-reward-image.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/blog/2019/04/09/mf_techniques_for_rs/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">推荐系统|矩阵分解概述</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/blog/2019/03/12/gradient_descent_plus/"><span class="level-item">机器学习|梯度下降详解</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.css"><script src="https://cdnjs.loli.net/ajax/libs/gitalk/1.6.2/gitalk.min.js"></script><script>var gitalk = new Gitalk({
             id: "c0799d19e7eedecb0c5f143518468e50",
             repo: "blog",
             owner: "laugh12321",
