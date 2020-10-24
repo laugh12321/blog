@@ -11058,6 +11058,62 @@ footer.footer .level-end .field {
 .timeline .media:first-child:last-child:after {
   top: calc(1.5 * 0.85rem / 2 + 0.75rem / 2);
 }
+.chinese-zodiac {
+  float: right;
+}
+@font-face {
+  font-family: 'chinese-zodiac';
+  font-display: swap;
+  src: url("../fonts/chinese-zodiac.eot");
+  src: url("../fonts/chinese-zodiac.eot") format('embedded-opentype'), url("../fonts/chinese-zodiac.woff2") format('woff2'), url("../fonts/chinese-zodiac.woff") format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+.symbolic-animals {
+  color: #3273dc;
+  display: inline-block;
+  font: normal normal normal 14px/1 chinese-zodiac;
+  font-size: x-large;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.icon-dragon:before {
+  content: '\e806';
+}
+.icon-tiger:before {
+  content: '\e809';
+}
+.icon-pig:before {
+  content: '\e810';
+}
+.icon-horse:before {
+  content: '\e813';
+}
+.icon-rat:before {
+  content: '\e816';
+}
+.icon-goat:before {
+  content: '\e818';
+}
+.icon-snake:before {
+  content: '\e820';
+}
+.icon-ox:before {
+  content: '\e822';
+}
+.icon-dog:before {
+  content: '\e825';
+}
+.icon-rabbit:before {
+  content: '\e826';
+}
+.icon-monkey:before {
+  content: '\e829';
+}
+.icon-rooster:before {
+  content: '\e82f';
+}
 .searchbox {
   display: none;
   top: 0;
@@ -11569,49 +11625,6 @@ figure.highlight .section {
   padding-left: unset;
   padding-right: unset;
   white-space: unset;
-}
-.cc-window,
-.cc-revoke {
-  font-size: 1.1rem !important;
-  font-family: 'Oxanium', Ubuntu, Roboto, 'Open Sans', 'Microsoft YaHei', sans-serif !important;
-}
-.cc-window {
-  color: #cdcdcd !important;
-  background-color: #000 !important;
-}
-.cc-window.cc-floating {
-  border-radius: 0;
-  box-shadow: none, 0 0 1px rgba(0,0,0,0.1);
-}
-.cc-window.cc-banner {
-  background-color: #000 !important;
-}
-.cc-window.cc-theme-block .cc-compliance > .cc-btn,
-.cc-window.cc-theme-classic .cc-compliance > .cc-btn {
-  border-radius: 290486px;
-}
-.cc-window .cc-compliance > .cc-btn {
-  font-weight: 400;
-  border: none;
-  color: #121617;
-  background-color: #fcee09;
-}
-.cc-window .cc-compliance > .cc-btn:hover,
-.cc-window .cc-compliance > .cc-btn:focus {
-  background-color: #f5e703;
-}
-.cc-window .cc-compliance > .cc-btn.cc-deny:hover {
-  color: #fcee09;
-  text-decoration: none;
-}
-.cc-revoke {
-  padding: 0.5rem 1rem !important;
-  color: #121617 !important;
-  background-color: #fcee09 !important;
-}
-.cc-revoke:hover {
-  text-decoration: none !important;
-  background-color: #f5e703;
 }
 @media screen and (min-width: 1280px) {
   .is-1-column .container,
